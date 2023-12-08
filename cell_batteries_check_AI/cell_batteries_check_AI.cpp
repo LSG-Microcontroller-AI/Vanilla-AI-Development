@@ -23,7 +23,11 @@ using namespace std;
 
 void init();
 
-void genera_esempi();
+//void genera_esempi();
+
+void lavora();
+
+void genera_esempi_for_battManag();
 
 int getRandomNumber();
 
@@ -37,15 +41,17 @@ void readData();
 
 void writeDataOnFile();
 
-float getRandomNumberFloat();
+//float getRandomNumberFloat1();
+//
+//float getRandomNumberFloat2();
 
-void lavora();
 
-unsigned long const sample_numbers = 10000000;
+
+unsigned long const sample_numbers = 4;
 
 const uint8_t numberOf_X = 2 + 1;
-const uint8_t numberOf_H = 10 + 1;
-const uint8_t numberOf_Y = 1;
+const uint8_t numberOf_H = 5 + 1;
+const uint8_t numberOf_Y = 6;
 
 float epsilon;
 
@@ -59,262 +65,417 @@ float y[50] = {};
 float h[50] = {};
 float d[50] = {};
 
-float operando1[sample_numbers]{};
-float operando2[sample_numbers]{};
-float risultato[sample_numbers]{};
+float amp_in[sample_numbers]{};
+float wattsH_in[sample_numbers]{};
+
+float b1_out[sample_numbers]{};
+float b2_out[sample_numbers]{};
+float b3_out[sample_numbers]{};
+float b4_out[sample_numbers]{};
+float b5_out[sample_numbers]{};
+float b6_out[sample_numbers]{};
 
 float T(float A);
 
 int main()
 {
-    /* float a = 0.00f;
-     srand(time(NULL));
-     a = getRandomNumberFloat();
-     cout << a << "\n";
-     return 0;*/
+	/*  float a = 0.00f;
+	  srand(time(NULL));
+	  for (int i = 0; i < 100; i++)
+	  {
+		  a = getRandomNumberFloat1();
+		  cout << a << "\n";
+	  }
+	  return 0;*/
 
-    init();
+	init();
 
 #ifdef __linux__
 
 #elif _WIN32
-    Beep(3000, 200);
+	Beep(3000, 200);
 #else
 #endif
-    char response;
+	char response;
 #ifdef __linux__
-    cout << "\nAre you sure you want clear the weights file\n";
-    response = getchar();
+	cout << "\nAre you sure you want clear the weights file\n";
+	response = getchar();
 #elif _WIN32
-    cout << "\nDo you want load the weights file\n";
-    response = _getch();
+	cout << "\nDo you want load the weights file\n";
+	response = _getch();
 #else
 #endif
-    if (response == 'y')
-    {
-        cout << "\nFile loaded\n";
-        readData();
-    }
-    else
-    {
-        cout << "\nFile deleted\n";
-    }
-    cout << "\nDo you want to start learning\n";
-    response = _getch();
+	if (response == 'y')
+	{
+		cout << "\nFile loaded\n";
+		readData();
+	}
+	else
+	{
+		cout << "\nFile deleted\n";
+	}
+	cout << "\nDo you want to start learning\n";
+	response = _getch();
 
-    if (response == 'y')
-    {
-        cout << "\nstart to learning......\n";
+	if (response == 'y')
+	{
+		cout << "\nstart to learning......\n";
 
-        apprendi();
-       
-    }
+		apprendi();
 
-    lavora();
+	}
+
+	lavora();
 
 
 }
 
 void lavora()
 {
-    for (int i = 0; i < 100; i++)
-    {
-        x[0] = (getRandomNumber() / 1000.00f);
-        x[1] = (getRandomNumber() / 1000.00f);
-        esegui();
-        char label = ' ';
-        float realResult = x[0] + x[1];
-        if ((realResult - y[0]) > ((realResult / 100.00f) * 1.00f))
-        {
-            label = '*';
-        }
-        cout << x[0] * 1000 << " + " << x[1] * 1000 << " = " << y[0] * 1000 << label << "\n";
-    }
+	x[0] = 0.025f;
+	x[1] = 0.0500f;
+	esegui();
+	char label = ' ';
+	float realResult = x[0] + x[1];
+	if ((realResult - y[0]) > ((realResult / 100.00f) * 1.00f))
+	{
+		label = '*';
+	}
+	cout << "\n batt1 : " << y[0];
+	cout << "\n batt2 : " << y[1];
+	cout << "\n batt3 : " << y[2];
+	cout << "\n batt4 : " << y[3];
+	cout << "\n batt5 : " << y[4];
+	cout << "\n batt6 : " << y[5];
 }
 
 void init()
 {
-    x[numberOf_X - 1] = 1.00f;
-    h[numberOf_H - 1] = 1.00f;
+	x[numberOf_X - 1] = 1.00f;
+	h[numberOf_H - 1] = 1.00f;
 
-    std::cout << "input elements:\n";
-    for (int i = 0; i < (numberOf_X - 1); i++)
-    {
-        x[i] = 0.00f;
-        cout << "x[";
-        cout << i;
-        cout << "]";
-        cout << "=";
-        cout << x[i];
-        cout << "\n";
-    }
-    std::cout << "x[";
-    cout << (int)(numberOf_X - 1);
-    cout << "]";
-    cout << "=";
-    cout << x[numberOf_X - 1];
-    cout << " - BIAS";
-    cout << "\n";
+	std::cout << "input elements:\n";
+	for (int i = 0; i < (numberOf_X - 1); i++)
+	{
+		x[i] = 0.00f;
+		cout << "x[";
+		cout << i;
+		cout << "]";
+		cout << "=";
+		cout << x[i];
+		cout << "\n";
+	}
+	std::cout << "x[";
+	cout << (int)(numberOf_X - 1);
+	cout << "]";
+	cout << "=";
+	cout << x[numberOf_X - 1];
+	cout << " - BIAS";
+	cout << "\n";
 
-    std::cout << "hidden elements:\n";
-    for (int i = 0; i < (numberOf_H - 1); i++)
-    {
-        h[i] = 0.00f;
-        cout << "h[";
-        cout << i;
-        cout << "]";
-        cout << "=";
-        cout << h[i];
-        cout << "\n";
-    }
-    cout << "h[";
-    cout << (int)(numberOf_H - 1);
-    cout << "]";
-    cout << "=";
-    cout << h[numberOf_H - 1];
-    cout << " - BIAS";
-    cout << "\n";
-    cout << "output elements:\n";
+	std::cout << "hidden elements:\n";
+	for (int i = 0; i < (numberOf_H - 1); i++)
+	{
+		h[i] = 0.00f;
+		cout << "h[";
+		cout << i;
+		cout << "]";
+		cout << "=";
+		cout << h[i];
+		cout << "\n";
+	}
+	cout << "h[";
+	cout << (int)(numberOf_H - 1);
+	cout << "]";
+	cout << "=";
+	cout << h[numberOf_H - 1];
+	cout << " - BIAS";
+	cout << "\n";
+	cout << "output elements:\n";
 
-    for (int i = 0; i < numberOf_Y; i++)
-    {
-        y[i] = 0.00f;
-        cout << "y[";
-        cout << i;
-        cout << "]";
-        cout << "=";
-        cout << y[i];
-        cout << "\n";
-    }
+	for (int i = 0; i < numberOf_Y; i++)
+	{
+		y[i] = 0.00f;
+		cout << "y[";
+		cout << i;
+		cout << "]";
+		cout << "=";
+		cout << y[i];
+		cout << "\n";
+	}
 
-    for (int i = 0; i < numberOf_X; i++)
-    {
-        for (int k = 0; k < numberOf_H - 1; k++)
-        {
-            W1[i][k] = (float)((getRandomNumber() - 50.00f) / 100.00f);
-            cout << "W1[" << i << "]"
-                 << "[" << k << "]"
-                 << " = " << W1[i][k] << "\n";
-        }
-    }
+	for (int i = 0; i < numberOf_X; i++)
+	{
+		for (int k = 0; k < numberOf_H - 1; k++)
+		{
+			W1[i][k] = (float)((getRandomNumber() - 50.00f) / 100.00f);
+			cout << "W1[" << i << "]"
+				<< "[" << k << "]"
+				<< " = " << W1[i][k] << "\n";
+		}
+	}
 
-    for (int k = 0; k < numberOf_H; k++)
-    {
-        for (int j = 0; j < numberOf_Y; j++)
-        {
-            W2[k][j] = (float)((getRandomNumber() - 50.00f) / 100.00f);
-            cout << "W2[" << k << "]"
-                 << "[" << j << "]"
-                 << " = " << W2[k][j] << "\n";
-        }
-    }
+	for (int k = 0; k < numberOf_H; k++)
+	{
+		for (int j = 0; j < numberOf_Y; j++)
+		{
+			W2[k][j] = (float)((getRandomNumber() - 50.00f) / 100.00f);
+			cout << "W2[" << k << "]"
+				<< "[" << j << "]"
+				<< " = " << W2[k][j] << "\n";
+		}
+	}
 }
 
-void genera_esempi()
+//void genera_esempi()
+//{
+//	srand(time(NULL));
+//	int f = 0;
+//
+//	amp_in[f] = 0.30f;
+//
+//	b1_out[f] = 0.50f;
+//
+//	f++;
+//
+//	amp_in[f] = 0.32f;
+//
+//	b1_out[f] = 0.40f;
+//
+//	f++;
+//
+//	amp_in[f] = 0.33f;
+//	/* operando2[index] = 0.32f;*/
+//	b1_out[f] = 0.30f;
+//
+//	f++;
+//
+//	amp_in[f] = 0.34f;
+//	/*   operando2[index] = 0.34f;*/
+//	b1_out[f] = 0.25f;
+//
+//	/*  if (amp_in[i] < 0.32f)
+//	  {
+//		  b1_out[i] = 0.50f;
+//	  }
+//	  else if (amp_in[i] > 0.32f && amp_in[i] < 0.35f)
+//	  {
+//		  b1_out[i] = 0.30f;
+//	  }
+//	  else if (amp_in[i] > 0.35f && amp_in[i] < 0.41f)
+//	  {
+//		  b1_out[i] = 0.10f;
+//	  }*/
+//
+//
+//}
+
+void genera_esempi_for_battManag()
 {
-    for (unsigned long i = 0; i < sample_numbers; i++)
-    {
-        operando1[i] = getRandomNumber() / 1000.00f;
-        operando2[i] = getRandomNumber() / 1000.00f;
-        risultato[i] = operando1[i] + operando2[i];
-        //cout << operando1[i] << " + " << operando2[i] << " = " << risultato[i] << "\n";
-    }
+	srand(time(NULL));
+
+	int index = 0;
+
+	amp_in[index] = 0.030f;
+
+	wattsH_in[index] = 0.0100f;
+
+	b1_out[index] = 0.375f;
+
+	b2_out[index] = 0.379f;
+
+	b3_out[index] = 0.375f;
+
+	b4_out[index] = 0.379f;
+
+	b5_out[index] = 0.375f;
+
+	b6_out[index] = 0.379f;
+
+	index++;
+
+	amp_in[index] = 0.030f;
+
+	wattsH_in[index] = 0.0200f;
+
+	b1_out[index] = 0.335f;
+
+	b2_out[index] = 0.339f;
+
+	b3_out[index] = 0.335f;
+
+	b4_out[index] = 0.339f;
+
+	b5_out[index] = 0.335f;
+
+	b6_out[index] = 0.339f;
+
+	index++;
+
+	amp_in[index] = 0.030f;
+
+	wattsH_in[index] = 0.0300f;
+
+	b1_out[index] = 0.285f;
+
+	b2_out[index] = 0.289f;
+
+	b3_out[index] = 0.285f;
+
+	b4_out[index] = 0.289f;
+
+	b5_out[index] = 0.285f;
+
+	b6_out[index] = 0.289f;
+
+	index++;
+
+	amp_in[index] = 0.025f;
+
+	wattsH_in[index] = 0.0500f;
+
+	b1_out[index] = 0.125f;
+
+	b2_out[index] = 0.129f;
+
+	b3_out[index] = 0.125f;
+
+	b4_out[index] = 0.129f;
+
+	b5_out[index] = 0.125f;
+
+	b6_out[index] = 0.129f;
+
 }
 
 void esegui()
 {
-    float A;
+	float A;
 
-    for (int k = 0; k < (numberOf_H - 1); k++)
-    {
-        A = 0.00f;
-        for (int i = 0; i < numberOf_X; i++)
-        {
-            A = A + (W1[i][k] * x[i]);
-        }
-        h[k] = T(A);
-    }
+	for (int k = 0; k < (numberOf_H - 1); k++)
+	{
+		A = 0.00f;
+		for (int i = 0; i < numberOf_X; i++)
+		{
+			A = A + (W1[i][k] * x[i]);
+		}
+		h[k] = T(A);
+	}
 
-    for (int j = 0; j < numberOf_Y; j++)
-    {
-        A = 0.00f;
-        for (int k = 0; k < numberOf_H; k++)
-        {
-            A = A + (W2[k][j] * h[k]);
-        }
-        y[j] = T(A);
-    }
+	for (int j = 0; j < numberOf_Y; j++)
+	{
+		A = 0.00f;
+		for (int k = 0; k < numberOf_H; k++)
+		{
+			A = A + (W2[k][j] * h[k]);
+		}
+		y[j] = T(A);
+	}
 }
 
 void apprendi()
 {
-    float err_epoca;
+	float err_epoca_first = 0;
 
-    float err_amm;
+	float err_epoca;
 
-    int epoca = 0;
+	float err_amm;
 
-    err_amm = 0.0050f;
+	int epoca = 0;
 
-    epsilon = 0.7f;
+	err_amm = 0.001f;
 
-    genera_esempi();
+	epsilon = 0.7f;
 
-    auto start = std::chrono::system_clock::now();
-    
-    do
-    {
-        err_epoca = 0.00f;
+	genera_esempi_for_battManag();
 
-        for (unsigned long p = 0; p < sample_numbers; p++)
-        {
-            x[0] = operando1[p];
-            x[1] = operando2[p];
-            d[0] = risultato[p];
-            esegui();
-            back_propagate();
-            if (err_rete > err_epoca)
-            {
-                err_epoca = err_rete;
-            }
-        }
-        epoca = epoca + 1;
+	auto start = std::chrono::system_clock::now();
 
-        cout << "\nVersion: Y \n\n";
+	do
+	{
+		err_epoca = 0.00f;
 
-        cout << "stop when err_epoca < " << err_amm << "\n\n";
+		for (unsigned long p = 0; p < sample_numbers; p++)
+		{
+			x[0] = amp_in[p];
 
-        cout << "epoca:" << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
+			x[1] = wattsH_in[p];
 
-        writeDataOnFile();
+			d[0] = b1_out[p];
 
-    } while (err_epoca > err_amm);
+			d[1] = b2_out[p];
 
-    auto end = std::chrono::system_clock::now();
+			d[2] = b3_out[p];
 
-    std::chrono::duration<double> elapsed_seconds = end - start;
+			d[3] = b4_out[p];
 
-    double sample_time = elapsed_seconds.count();
+			d[4] = b5_out[p];
 
-    cout << "learning time : " << (int)(sample_time / 60) << " minutes.\n";
+			d[5] = b6_out[p];
+
+			esegui();
+
+			back_propagate();
+
+			if (err_rete > err_epoca)
+			{
+				err_epoca = err_rete;
+			}
+			//			if ((err_epoca_first >= err_epoca) /*&& err_epoca_first != 0.00f*/)
+			//			{
+			//				cout << "\n problems \n\n";
+			//				cout << "press a key..\n\n";
+			//
+			//#ifdef __linux__
+			//				getchar();
+			//#elif _WIN32
+			//				_getch();
+			//#else
+			//
+			//#endif
+			//			}
+			//			else
+			//			{
+			//				err_epoca_first = err_epoca;
+			//			}
+		}
+		epoca = epoca + 1;
+
+		cout << "\nVersion: Y \n\n";
+
+		cout << "stop when err_epoca < " << err_amm << "\n\n";
+
+		cout << "epoca:" << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
+
+		writeDataOnFile();
+
+	} while (err_epoca > err_amm);
+
+	auto end = std::chrono::system_clock::now();
+
+	std::chrono::duration<double> elapsed_seconds = end - start;
+
+	double sample_time = elapsed_seconds.count();
+
+	cout << "learning time : " << (int)(sample_time / 60) << " minutes.\n";
 
 #ifdef __linux__
-    // linux code goes here
+	// linux code goes here
 #elif _WIN32
-    Beep(3000, 200);
-    Beep(3000, 200);
-    Beep(3000, 200);
-    Beep(3000, 200);
-    Beep(3000, 200);
+	Beep(3000, 200);
+	Beep(3000, 200);
+	Beep(3000, 200);
+	Beep(3000, 200);
+	Beep(3000, 200);
 #else
 #endif
 
-    cout << "press a key..\n\n";
+	cout << "press a key..\n\n";
 
 #ifdef __linux__
-    getchar();
+	getchar();
 #elif _WIN32
-    _getch();
+	_getch();
 #else
 
 #endif
@@ -322,115 +483,124 @@ void apprendi()
 
 void back_propagate()
 {
-    float err_H[50];
+	float err_H[500];
 
-    float delta;
+	float delta;
 
-    for (int k = 0; k < numberOf_H; k++)
-    {
-        err_H[k] = 0.00f;
-    }
-    err_rete = 0.00f;
-    for (int j = 0; j < numberOf_Y; j++)
-    {
-        if (abs(d[j] - y[j]) > err_rete)
-        {
-            err_rete = abs(d[j] - y[j]);
-        }
-        delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
-        for (int k = 0; k < numberOf_H; k++)
-        {
-            err_H[k] = err_H[k] + (delta * W2[k][j]);
-            W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
-        }
-    }
-    for (int k = 0; k < numberOf_H - 1; k++)
-    {
-        delta = err_H[k] * h[k] * (1.00f - h[k]);
-        for (int i = 0; i < numberOf_X; i++)
-        {
-            W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
-        }
-    }
+	for (int k = 0; k < numberOf_H; k++)
+	{
+		err_H[k] = 0.00f;
+	}
+	err_rete = 0.00f;
+	for (int j = 0; j < numberOf_Y; j++)
+	{
+		if (abs(d[j] - y[j]) > err_rete)
+		{
+			err_rete = abs(d[j] - y[j]);
+		}
+		delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
+		for (int k = 0; k < numberOf_H; k++)
+		{
+			err_H[k] = err_H[k] + (delta * W2[k][j]);
+			W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
+		}
+	}
+	for (int k = 0; k < numberOf_H - 1; k++)
+	{
+		delta = err_H[k] * h[k] * (1.00f - h[k]);
+		for (int i = 0; i < numberOf_X; i++)
+		{
+			W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
+		}
+	}
 }
 
 int getRandomNumber()
 {
-   // return (rand() % (10 - 100 + 1) + 0);
-    return rand() % 60 + 10;
-    // return (rand() % (0 - 49 + 1) + 0);
+	return (rand() % (0 - 100 + 1) + 0);
+	//return (rand() % 60 + 10) / 1000.00f;
+	// return (rand() % (0 - 49 + 1) + 0);
 }
 
-float getRandomNumberFloat()
-{
-    return (rand() % 1200 + 3000) / 1000.00f;
-}
+//float getRandomNumberFloat1()
+//{
+//
+//	//return (rand() % 1700 + 2500) / 10000.00f;
+//	return (rand() % 1200 + 3000) / 10000.00f;
+//}
+//
+//float getRandomNumberFloat2()
+//{
+//	//return (rand() % 1700 + 2500) / 10000.00f;
+//	return (rand() % 4200 + 3000) / 10000.00f;
+//}
 
 float T(float A)
 {
-    return 1.00f / (1.00f + pow(M_E, -A));
+	return 1.00f / (1.00f + pow(M_E, -A));
 }
 
 void readData()
 {
-    std::ifstream in("test3.bin", std::ios_base::binary);
-    if (in.good())
-    {
-        for (int j = 0; j < numberOf_Y; j++)
-        {
-            for (int k = 0; k < numberOf_H; k++)
-            {
-                // cout << W2[k][j];
-                in.read((char *)&W2[k][j], sizeof(float));
-            }
-        }
+	std::ifstream in("batManage1.bin", std::ios_base::binary);
 
-        for (int k = 0; k < numberOf_H - 1; k++)
-        {
-            for (int i = 0; i < numberOf_X; i++)
-            {
-                in.read((char *)&W1[i][k], sizeof(float));
-            }
-        }
-    }
+	if (in.good())
+	{
+		for (int j = 0; j < numberOf_Y; j++)
+		{
+			for (int k = 0; k < numberOf_H; k++)
+			{
+				// cout << W2[k][j];
+				in.read((char*)&W2[k][j], sizeof(float));
+			}
+		}
+
+		for (int k = 0; k < numberOf_H - 1; k++)
+		{
+			for (int i = 0; i < numberOf_X; i++)
+			{
+				in.read((char*)&W1[i][k], sizeof(float));
+			}
+		}
+	}
 }
 
 void writeDataOnFile()
 {
-    float f1 = 0.00f;
-    try
-    {
-        cout << "\nWriting to file... \n\n";
+	float f1 = 0.00f;
+	try
+	{
+		cout << "\nWriting to file... \n\n";
 
-        std::ofstream fw("test3.bin", std::ios_base::binary);
+		std::ofstream fw("batManage1.bin", std::ios_base::binary);
 
-        if (fw.good())
-        {
-            for (int j = 0; j < numberOf_Y; j++)
-            {
-                for (int k = 0; k < numberOf_H; k++)
-                {
-                    fw.write((char *)&W2[k][j], sizeof(float));
-                }
-            }
+		if (fw.good())
+		{
+			for (int j = 0; j < numberOf_Y; j++)
+			{
+				for (int k = 0; k < numberOf_H; k++)
+				{
+					fw.write((char*)&W2[k][j], sizeof(float));
+				}
+			}
 
-            for (int k = 0; k < numberOf_H - 1; k++)
-            {
-                for (int i = 0; i < numberOf_X; i++)
-                {
-                    fw.write((char *)&W1[i][k], sizeof(float));
-                }
-            }
+			for (int k = 0; k < numberOf_H - 1; k++)
+			{
+				for (int i = 0; i < numberOf_X; i++)
+				{
+					fw.write((char*)&W1[i][k], sizeof(float));
+				}
+			}
 
-            fw.close();
+			fw.close();
 
-            cout << "\nFile closed... \n\n";
-        }
-        else
-            cout << "Problem with opening file";
-    }
-    catch (const char *msg)
-    {
-        cerr << msg << endl;
-    }
+			cout << "\nFile closed... \n\n";
+		}
+		else
+			cout << "Problem with opening file";
+	}
+	catch (const char* msg)
+	{
+		cerr << msg << endl;
+	}
 }
