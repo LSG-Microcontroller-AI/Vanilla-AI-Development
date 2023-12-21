@@ -20,6 +20,10 @@
   <ItemGroup>
     <ClCompile Include="cell_batteries_check_AI.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="batManage1.bin" />
+    <None Include="BATT0.CSV" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
