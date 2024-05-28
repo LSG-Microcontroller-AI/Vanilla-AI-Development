@@ -8,8 +8,9 @@ using namespace std;
 #include <cmath>
 #include <stdlib.h>
 #include <stdint.h>
+
 #ifdef __linux__
-// linux code goes here
+
 #elif _WIN32
 #include <conio.h>
 #include <windows.h>
@@ -21,7 +22,6 @@ using namespace std;
 #include <ctime>
 #include <string>
 #include <fstream>
-
 
 void init();
 
@@ -49,11 +49,10 @@ void read_samples_from_file();
 //
 //float getRandomNumberFloat2();
 
-
-
-
 const uint8_t numberOf_X = 2 + 1;
+
 const uint8_t numberOf_H = 5 + 1;
+
 const uint8_t numberOf_Y = 6;
 
 uint16_t const sample_numbers = 10;
@@ -63,25 +62,34 @@ float epsilon;
 float err_rete;
 
 float W1[numberOf_X][numberOf_H];
+
 float W2[numberOf_H][numberOf_Y];
 
 float x[50] = {};
+
 float y[50] = {};
+
 float h[50] = {};
+
 float d[50] = {};
 
 float amp_in[sample_numbers] {};
+
 float total_watts[sample_numbers] {};
 
 float b1_out[sample_numbers] {};
+
 float b2_out[sample_numbers] {};
+
 float b3_out[sample_numbers] {};
+
 float b4_out[sample_numbers] {};
+
 float b5_out[sample_numbers] {};
+
 float b6_out[sample_numbers] {};
 
 float T(float A);
-
 
 int main()
 {
@@ -93,9 +101,11 @@ int main()
     Beep(3000, 200);
 #else
 #endif
+
     char response;
 
     cout << "\n Do you want load the weights file\n";
+
 #ifdef __linux__
     response = std::cin.get();
     std::cin.ignore();
@@ -103,15 +113,18 @@ int main()
     response = _getch();
 #else
 #endif
+
     if (response == 'y')
     {
         cout << "\n File loaded\n";
+
         read_weights_from_file();
     }
     else
     {
         cout << "\n File deleted\n";
     }
+
     cout << "\n Do you want to start learning\n";
 
 #ifdef __linux__
@@ -136,71 +149,114 @@ int main()
 void lavora()
 {
     x[0] = 14.82f / 1000.00f;//AMPS
+
     x[1] = 30.00f / 1000.00f;//WATTS
+
     esegui();
+
     cout << "\n amps : "  << x[0] * 1000.00f;
+
     cout << "\n watts : " << x[1] * 1000.00f;;
 
     cout << "\n batt1 : " << y[0] * 100.00f;
+
     cout << "\n batt2 : " << y[1] * 100.00f;;
+
     cout << "\n batt3 : " << y[2] * 100.00f;;
+
     cout << "\n batt4 : " << y[3] * 100.00f;;
+
     cout << "\n batt5 : " << y[4] * 100.00f;;
+
     cout << "\n batt6 : " << y[5] * 100.00f;;
 }
 
 void init()
 {
     x[numberOf_X - 1] = 1.00f;
+
     h[numberOf_H - 1] = 1.00f;
 
     std::cout << "input elements:\n";
+
     for (int i = 0; i < (numberOf_X - 1); i++)
     {
         x[i] = 0.00f;
+
         cout << "x[";
+
         cout << i;
+
         cout << "]";
+
         cout << "=";
+
         cout << x[i];
+
         cout << "\n";
     }
     std::cout << "x[";
+
     cout << (int)(numberOf_X - 1);
+
     cout << "]";
+
     cout << "=";
+
     cout << x[numberOf_X - 1];
+
     cout << " - BIAS";
+
     cout << "\n";
 
     std::cout << "hidden elements:\n";
+
     for (int i = 0; i < (numberOf_H - 1); i++)
     {
         h[i] = 0.00f;
+
         cout << "h[";
+
         cout << i;
+
         cout << "]";
+
         cout << "=";
+
         cout << h[i];
+
         cout << "\n";
     }
     cout << "h[";
+
     cout << (int)(numberOf_H - 1);
+
     cout << "]";
+
     cout << "=";
+
     cout << h[numberOf_H - 1];
+
     cout << " - BIAS";
+
     cout << "\n";
+
     cout << "output elements:\n";
 
     for (int i = 0; i < numberOf_Y; i++)
     {
         y[i] = 0.00f;
+
         cout << "y[";
+
         cout << i;
+
         cout << "]";
+
         cout << "=";
+
         cout << y[i];
+
         cout << "\n";
     }
 
@@ -209,6 +265,7 @@ void init()
         for (int k = 0; k < numberOf_H - 1; k++)
         {
             W1[i][k] = (float)((getRandomNumber() - 50.00f) / 100.00f);
+
             cout << "W1[" << i << "]"
                  << "[" << k << "]"
                  << " = " << W1[i][k] << "\n";
@@ -220,6 +277,7 @@ void init()
         for (int j = 0; j < numberOf_Y; j++)
         {
             W2[k][j] = (float)((getRandomNumber() - 50.00f) / 100.00f);
+
             cout << "W2[" << k << "]"
                  << "[" << j << "]"
                  << " = " << W2[k][j] << "\n";
@@ -355,20 +413,26 @@ void esegui()
     for (int k = 0; k < (numberOf_H - 1); k++)
     {
         A = 0.00f;
+
         for (int i = 0; i < numberOf_X; i++)
         {
+
             A = A + (W1[i][k] * x[i]);
+
         }
+
         h[k] = T(A);
     }
 
     for (int j = 0; j < numberOf_Y; j++)
     {
         A = 0.00f;
+
         for (int k = 0; k < numberOf_H; k++)
         {
             A = A + (W2[k][j] * h[k]);
         }
+
         y[j] = T(A);
     }
 }
@@ -495,6 +559,7 @@ void back_propagate()
         err_H[k] = 0.00f;
     }
     err_rete = 0.00f;
+
     for (int j = 0; j < numberOf_Y; j++)
     {
         if (abs(d[j] - y[j]) > err_rete)
@@ -502,15 +567,18 @@ void back_propagate()
             err_rete = abs(d[j] - y[j]);
         }
         delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
+
         for (int k = 0; k < numberOf_H; k++)
         {
             err_H[k] = err_H[k] + (delta * W2[k][j]);
+
             W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
         }
     }
     for (int k = 0; k < numberOf_H - 1; k++)
     {
         delta = err_H[k] * h[k] * (1.00f - h[k]);
+
         for (int i = 0; i < numberOf_X; i++)
         {
             W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
@@ -548,11 +616,17 @@ void read_samples_from_file()
     uint16_t samples_index = 0;
 
     std::ifstream in("BATT0.CSV");
+
     string col;
+
     float col2;
+
     getline(in, col, ';');
+
     getline(in, col, ';');
+
     getline(in, col, ';');
+
     getline(in, col, ';');
 
     uint8_t lines_index = 1;
@@ -560,48 +634,71 @@ void read_samples_from_file()
     while (in.good() && samples_index <= sample_numbers)
     {
         getline(in, col, ';');
+
         getline(in, col, ';');
+
         getline(in, col, ';');
+
         col2 = stof(col);
 
         switch (lines_index)
         {
         case 1:
             b1_out[samples_index] = col2 / 100.00;
+
             cout << "b1_out = " << col2  << "\r\n";
+
             break;
         case 2:
             b2_out[samples_index] = col2 / 100.00;
+
             cout << "b2_out = " << col2 << "\r\n";
+
             break;
         case 3:
             b3_out[samples_index] = col2 / 100.00;
+
             cout << "b3_out = " << col2 << "\r\n";
+
             break;
         case 4:
             b4_out[samples_index] = col2 / 100.00;
+
             cout << "b4_out = " << col2 << "\r\n";
+
             break;
         case 5:
             b5_out[samples_index] = col2 / 100.00;
+
             cout << "b5_out = " << col2 << "\r\n";
+
             break;
         case 6:
             b6_out[samples_index] = col2 / 100.00;
+
             cout << "b6_out = " << col2 << "\r\n";
+
             break;
         case 7:
             total_watts[samples_index] = col2 / 1000.00;
+
             cout << "total_watts = " << col2 << "\r\n";
+
             break;
         case 8:
             amp_in[samples_index] = col2 / 1000.00;
+
             cout << "amp_in = " << col2 << "\r\n";
+
             lines_index = 0;
+
             cout << "-----------> samples_index = " << samples_index << "\r\n";
+
             samples_index++;
+
             break;
         default:
+
             break;
         }
 
