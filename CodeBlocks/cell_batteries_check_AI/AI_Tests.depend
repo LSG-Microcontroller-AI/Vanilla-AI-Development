@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1716888973 source:c:\repos\lsg-microcontroller-ai\cell_batteries_ai_codebocks_test\ai_test\ai_tests\main.cpp
+	<iostream>
+	<cmath>
+	<stdlib.h>
+	<stdint.h>
+	<conio.h>
+	<windows.h>
+	<chrono>
+	<ctime>
+	<string>
+	<fstream>
+
