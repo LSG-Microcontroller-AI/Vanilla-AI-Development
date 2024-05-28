@@ -7,6 +7,7 @@ using namespace std;
 #include <iostream>
 #include <cmath>
 #include <stdlib.h>
+#include <stdint.h>
 #ifdef __linux__
 // linux code goes here
 #elif _WIN32
@@ -110,8 +111,12 @@ int main()
 		cout << "\nFile deleted\n";
 	}
 	cout << "\nDo you want to start learning\n";
+#ifdef __linux__
+	response = getchar();
+#elif _WIN32
 	response = _getch();
-
+#else
+#endif
 	if (response == 'y')
 	{
 		cout << "\nstart to learning......\n";
