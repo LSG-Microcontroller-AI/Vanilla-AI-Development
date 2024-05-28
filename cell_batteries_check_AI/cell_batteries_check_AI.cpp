@@ -54,7 +54,7 @@ const uint8_t numberOf_X = 2 + 1;
 const uint8_t numberOf_H = 5 + 1;
 const uint8_t numberOf_Y = 6;
 
-uint16_t const sample_numbers = 60;
+uint16_t const sample_numbers = 10;
 
 float epsilon;
 
@@ -127,15 +127,18 @@ int main()
 
 void lavora()
 {
-	x[0] = 14.82f / 1000.00f;
-	x[1] = 35000.00f / 1000.00f;
+	x[0] = 14.82f / 1000.00f;//AMPS
+	x[1] = 30.00f / 1000.00f;//WATTS
 	esegui();
-	cout << "\n batt1 : " << y[0] * 1000.00f;
-	cout << "\n batt2 : " << y[1] * 1000.00f;;
-	cout << "\n batt3 : " << y[2] * 1000.00f;;
-	cout << "\n batt4 : " << y[3] * 1000.00f;;
-	cout << "\n batt5 : " << y[4] * 1000.00f;;
-	cout << "\n batt6 : " << y[5] * 1000.00f;;
+	cout << "\n amps : "  << x[0] * 1000.00f;
+	cout << "\n watts : " << x[1] * 1000.00f;;
+
+	cout << "\n batt1 : " << y[0] * 100.00f;
+	cout << "\n batt2 : " << y[1] * 100.00f;;
+	cout << "\n batt3 : " << y[2] * 100.00f;;
+	cout << "\n batt4 : " << y[3] * 100.00f;;
+	cout << "\n batt5 : " << y[4] * 100.00f;;
+	cout << "\n batt6 : " << y[5] * 100.00f;;
 }
 
 void init()
@@ -555,27 +558,27 @@ void read_samples_from_file()
 		switch (lines_index)
 		{
 		case 1:
-			b1_out[samples_index] = col2 / 1000.00;
+			b1_out[samples_index] = col2 / 100.00;
 			cout << "b1_out = " << col2  << "\r\n";
 			break;
 		case 2:
-			b2_out[samples_index] = col2 / 1000.00;
+			b2_out[samples_index] = col2 / 100.00;
 			cout << "b2_out = " << col2 << "\r\n";
 			break;
 		case 3:
-			b3_out[samples_index] = col2 / 1000.00;
+			b3_out[samples_index] = col2 / 100.00;
 			cout << "b3_out = " << col2 << "\r\n";
 			break;
 		case 4:
-			b4_out[samples_index] = col2 / 1000.00;
+			b4_out[samples_index] = col2 / 100.00;
 			cout << "b4_out = " << col2 << "\r\n";
 			break;
 		case 5:
-			b5_out[samples_index] = col2 / 1000.00;
+			b5_out[samples_index] = col2 / 100.00;
 			cout << "b5_out = " << col2 << "\r\n";
 			break;
 		case 6:
-			b6_out[samples_index] = col2 / 1000.00;
+			b6_out[samples_index] = col2 / 100.00;
 			cout << "b6_out = " << col2 << "\r\n";
 			break;
 		case 7:
@@ -597,7 +600,7 @@ void read_samples_from_file()
 
 		lines_index++;
 
-		//Sleep(500);
+		//Sleep(200);
 	}
 }
 
