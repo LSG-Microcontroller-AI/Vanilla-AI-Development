@@ -151,10 +151,12 @@ void lavora()
 
 void init()
 {
+    //Set Bias
     x[numberOf_X - 1] = 1.00f;
     h[numberOf_H - 1] = 1.00f;
 
     std::cout << "input elements:\n";
+
     for (int i = 0; i < (numberOf_X - 1); i++)
     {
         x[i] = 0.00f;
