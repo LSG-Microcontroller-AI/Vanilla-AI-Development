@@ -1,6 +1,3 @@
-// ConsoleApplication1.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 using namespace std;
 
 #define _USE_MATH_DEFINES
@@ -25,11 +22,7 @@ using namespace std;
 
 void init();
 
-//void genera_esempi();
-
 void lavora();
-
-//void genera_esempi_for_battManag();
 
 int getRandomNumber();
 
@@ -44,10 +37,6 @@ void read_weights_from_file();
 void write_weights_on_file();
 
 void read_samples_from_file();
-
-//float getRandomNumberFloat1();
-//
-//float getRandomNumberFloat2();
 
 const uint8_t numberOf_X = 2 + 1;
 
@@ -100,6 +89,7 @@ int main()
 #elif _WIN32
     Beep(3000, 200);
 #else
+
 #endif
 
     char response;
@@ -112,17 +102,18 @@ int main()
 #elif _WIN32
     response = _getch();
 #else
+
 #endif
 
     if (response == 'y')
     {
-        cout << "\n File loaded\n";
+        cout << "\n Weights loaded\n";
 
         read_weights_from_file();
     }
     else
     {
-        cout << "\n File deleted\n";
+        cout << "\n Weights overwritten\n";
     }
 
     cout << "\n Do you want to start learning\n";
@@ -137,7 +128,7 @@ int main()
 
     if (response == 'y')
     {
-        cout << "\n start to learning......\n";
+        cout << "\n Start to learning......\n";
 
         apprendi();
 
@@ -156,19 +147,19 @@ void lavora()
 
     cout << "\n amps : "  << x[0] * 1000.00f;
 
-    cout << "\n watts : " << x[1] * 1000.00f;;
+    cout << "\n watts : " << x[1] * 1000.00f;
 
     cout << "\n batt1 : " << y[0] * 100.00f;
 
-    cout << "\n batt2 : " << y[1] * 100.00f;;
+    cout << "\n batt2 : " << y[1] * 100.00f;
 
-    cout << "\n batt3 : " << y[2] * 100.00f;;
+    cout << "\n batt3 : " << y[2] * 100.00f;
 
-    cout << "\n batt4 : " << y[3] * 100.00f;;
+    cout << "\n batt4 : " << y[3] * 100.00f;
 
-    cout << "\n batt5 : " << y[4] * 100.00f;;
+    cout << "\n batt5 : " << y[4] * 100.00f;
 
-    cout << "\n batt6 : " << y[5] * 100.00f;;
+    cout << "\n batt6 : " << y[5] * 100.00f;
 }
 
 void init()
@@ -178,69 +169,25 @@ void init()
 
     h[numberOf_H - 1] = 1.00f;
 
-    std::cout << "input elements:\n";
+    cout << "input elements:\n";
 
     for (int i = 0; i < (numberOf_X - 1); i++)
     {
         x[i] = 0.00f;
 
-        cout << "x[";
-
-        cout << i;
-
-        cout << "]";
-
-        cout << "=";
-
-        cout << x[i];
-
-        cout << "\n";
+        cout << "x["<< i<< "]"<< "="<< x[i]<< "\n";
     }
-    std::cout << "x[";
+    cout << "x["<< (int)(numberOf_X-1)<< "]"<< "="<< x[numberOf_X-1]<< "-BIAS"<< "\n";
 
-    cout << (int)(numberOf_X - 1);
+    cout << "hidden elements:\n";
 
-    cout << "]";
-
-    cout << "=";
-
-    cout << x[numberOf_X - 1];
-
-    cout << " - BIAS";
-
-    cout << "\n";
-
-    std::cout << "hidden elements:\n";
-
-    for (int i = 0; i < (numberOf_H - 1); i++)
+    for (int i = 0; i < (numberOf_H-1); i++)
     {
         h[i] = 0.00f;
 
-        cout << "h[";
-
-        cout << i;
-
-        cout << "]";
-
-        cout << "=";
-
-        cout << h[i];
-
-        cout << "\n";
+        cout << "h["<< i<< "]"<< "="<< h[i]<< "\n";
     }
-    cout << "h[";
-
-    cout << (int)(numberOf_H - 1);
-
-    cout << "]";
-
-    cout << "=";
-
-    cout << h[numberOf_H - 1];
-
-    cout << " - BIAS";
-
-    cout << "\n";
+    cout << "h["<< (int)(numberOf_H-1)<< "]"<<"="<< h[numberOf_H-1]<< "-BIAS"<< "\n";
 
     cout << "output elements:\n";
 
@@ -248,17 +195,7 @@ void init()
     {
         y[i] = 0.00f;
 
-        cout << "y[";
-
-        cout << i;
-
-        cout << "]";
-
-        cout << "=";
-
-        cout << y[i];
-
-        cout << "\n";
+        cout<<"y["<<i<<"]="<< y[i]<< "\n";
     }
 
     for (int i = 0; i < numberOf_X; i++)
@@ -267,9 +204,7 @@ void init()
         {
             W1[i][k] = (float)((getRandomNumber() - 50.00f) / 100.00f);
 
-            cout << "W1[" << i << "]"
-                 << "[" << k << "]"
-                 << " = " << W1[i][k] << "\n";
+            cout << "W1[" << i << "]"<< "[" << k << "]"<< "=" << W1[i][k] << "\n";
         }
     }
 
@@ -279,133 +214,89 @@ void init()
         {
             W2[k][j] = (float)((getRandomNumber() - 50.00f) / 100.00f);
 
-            cout << "W2[" << k << "]"
-                 << "[" << j << "]"
-                 << " = " << W2[k][j] << "\n";
+            cout<<"W2["<<k<<"]"<<"["<<j<<"]"<<"="<<W2[k][j]<<"\n";
         }
     }
 }
 
-//void genera_esempi()
-//{
-//	srand(time(NULL));
-//	int f = 0;
-//
-//	amp_in[f] = 0.30f;
-//
-//	b1_out[f] = 0.50f;
-//
-//	f++;
-//
-//	amp_in[f] = 0.32f;
-//
-//	b1_out[f] = 0.40f;
-//
-//	f++;
-//
-//	amp_in[f] = 0.33f;
-//	/* operando2[index] = 0.32f;*/
-//	b1_out[f] = 0.30f;
-//
-//	f++;
-//
-//	amp_in[f] = 0.34f;
-//	/*   operando2[index] = 0.34f;*/
-//	b1_out[f] = 0.25f;
-//
-//	/*  if (amp_in[i] < 0.32f)
-//	  {
-//		  b1_out[i] = 0.50f;
-//	  }
-//	  else if (amp_in[i] > 0.32f && amp_in[i] < 0.35f)
-//	  {
-//		  b1_out[i] = 0.30f;
-//	  }
-//	  else if (amp_in[i] > 0.35f && amp_in[i] < 0.41f)
-//	  {
-//		  b1_out[i] = 0.10f;
-//	  }*/
-//
-//
-//}
 
-//void genera_esempi_for_battManag()
-//{
-//	srand(time(NULL));
-//
-//	int index = 0;
-//
-//	amp_in[index] = 0.030f;
-//
-//	total_watts[index] = 0.0100f;
-//
-//	b1_out[index] = 0.375f;
-//
-//	b2_out[index] = 0.379f;
-//
-//	b3_out[index] = 0.375f;
-//
-//	b4_out[index] = 0.379f;
-//
-//	b5_out[index] = 0.375f;
-//
-//	b6_out[index] = 0.379f;
-//
-//	index++;
-//
-//	amp_in[index] = 0.030f;
-//
-//	total_watts[index] = 0.0200f;
-//
-//	b1_out[index] = 0.335f;
-//
-//	b2_out[index] = 0.339f;
-//
-//	b3_out[index] = 0.335f;
-//
-//	b4_out[index] = 0.339f;
-//
-//	b5_out[index] = 0.335f;
-//
-//	b6_out[index] = 0.339f;
-//
-//	index++;
-//
-//	amp_in[index] = 0.030f;
-//
-//	total_watts[index] = 0.0300f;
-//
-//	b1_out[index] = 0.285f;
-//
-//	b2_out[index] = 0.289f;
-//
-//	b3_out[index] = 0.285f;
-//
-//	b4_out[index] = 0.289f;
-//
-//	b5_out[index] = 0.285f;
-//
-//	b6_out[index] = 0.289f;
-//
-//	index++;
-//
-//	amp_in[index] = 0.025f;
-//
-//	total_watts[index] = 0.0500f;
-//
-//	b1_out[index] = 0.125f;
-//
-//	b2_out[index] = 0.129f;
-//
-//	b3_out[index] = 0.125f;
-//
-//	b4_out[index] = 0.129f;
-//
-//	b5_out[index] = 0.125f;
-//
-//	b6_out[index] = 0.129f;
-//
-//}
+void genera_esempi_for_battManag()
+{
+    srand(time(NULL));
+
+    int index = 0;
+
+    amp_in[index] = 0.030f;
+
+    total_watts[index] = 0.0100f;
+
+    b1_out[index] = 0.375f;
+
+    b2_out[index] = 0.379f;
+
+    b3_out[index] = 0.375f;
+
+    b4_out[index] = 0.379f;
+
+    b5_out[index] = 0.375f;
+
+    b6_out[index] = 0.379f;
+
+    index++;
+
+    amp_in[index] = 0.030f;
+
+    total_watts[index] = 0.0200f;
+
+    b1_out[index] = 0.335f;
+
+    b2_out[index] = 0.339f;
+
+    b3_out[index] = 0.335f;
+
+    b4_out[index] = 0.339f;
+
+    b5_out[index] = 0.335f;
+
+    b6_out[index] = 0.339f;
+
+    index++;
+
+    amp_in[index] = 0.030f;
+
+    total_watts[index] = 0.0300f;
+
+    b1_out[index] = 0.285f;
+
+    b2_out[index] = 0.289f;
+
+    b3_out[index] = 0.285f;
+
+    b4_out[index] = 0.289f;
+
+    b5_out[index] = 0.285f;
+
+    b6_out[index] = 0.289f;
+
+    index++;
+
+    amp_in[index] = 0.025f;
+
+    total_watts[index] = 0.0500f;
+
+    b1_out[index] = 0.125f;
+
+    b2_out[index] = 0.129f;
+
+    b3_out[index] = 0.125f;
+
+    b4_out[index] = 0.129f;
+
+    b5_out[index] = 0.125f;
+
+    b6_out[index] = 0.129f;
+
+}
 
 void esegui()
 {
@@ -616,11 +507,11 @@ void read_samples_from_file()
 {
     uint16_t samples_index = 0;
 
-    std::ifstream in("BATT0.CSV");
+    string col = "";
 
-    string col;
+    float col2 = 0.00f;
 
-    float col2;
+    ifstream in("BATT0.CSV");
 
     getline(in, col, ';');
 
