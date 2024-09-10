@@ -23,8 +23,6 @@ using namespace std;
 #include <string>
 #include <fstream>
 
-
-
 void init();
 
 void lavora();
@@ -88,6 +86,8 @@ float b5_out[sample_numbers] {};
 float b6_out[sample_numbers] {};
 
 float T(float A);
+
+default_random_engine generator(time(0));
 
 int main()
 {
@@ -176,8 +176,6 @@ void lavora()
     cout << "\n batt6 : " << y[5] * 100.00f;
 }
 
-std::default_random_engine generator(time(0));
-
 
 void init()
 {
@@ -242,7 +240,6 @@ void init()
         }
     }
 }
-
 
 void genera_esempi_for_battManag()
 {
@@ -355,7 +352,7 @@ void esegui()
 
 void apprendi()
 {
-    float err_epoca_first = 0;
+    //float err_epoca_first = 0;
 
     float err_epoca;
 
@@ -504,25 +501,12 @@ void back_propagate()
 
 double get_random_number_from_xavier()
 {
-     std::uniform_real_distribution<double> distribution(_lower_bound_xavier, _upper_bound_xavier);
+     uniform_real_distribution<double> distribution(_lower_bound_xavier, _upper_bound_xavier);
 
      double random_value = distribution(generator);
 
      return random_value;
 }
-
-//float getRandomNumberFloat1()
-//{
-//
-//	//return (rand() % 1700 + 2500) / 10000.00f;
-//	return (rand() % 1200 + 3000) / 10000.00f;
-//}
-//
-//float getRandomNumberFloat2()
-//{
-//	//return (rand() % 1700 + 2500) / 10000.00f;
-//	return (rand() % 4200 + 3000) / 10000.00f;
-//}
 
 float T(float A)
 {
@@ -655,7 +639,7 @@ void read_weights_from_file()
 
 void write_weights_on_file()
 {
-    float f1 = 0.00f;
+    //float f1 = 0.00f;
     try
     {
         cout << "\nWriting to file... \n\n";
