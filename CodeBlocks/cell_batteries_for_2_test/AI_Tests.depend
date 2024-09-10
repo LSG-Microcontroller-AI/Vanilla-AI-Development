@@ -23,3 +23,17 @@
 	<string>
 	<fstream>
 
+1725976710 source:/home/luigi/Repo/LSG-Microcontroller-AI/cell_batteries_check_AI/CodeBlocks/cell_batteries_for_2_test/main.cpp
+	<iostream>
+	<cmath>
+	<stdlib.h>
+	<stdint.h>
+	<random>
+	<ctime>
+	<conio.h>
+	<windows.h>
+	<chrono>
+	<ctime>
+	<string>
+	<fstream>
+
