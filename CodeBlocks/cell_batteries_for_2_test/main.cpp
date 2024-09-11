@@ -5,6 +5,8 @@ using namespace std;
 #include <cmath>
 #include <stdlib.h>
 #include <stdint.h>
+#include <sstream>
+
 
 #include <random>   // Per generazione numeri casuali
 #include <ctime>    // Per il seme random
@@ -39,7 +41,11 @@ void read_weights_from_file();
 
 void write_weights_on_file();
 
-void read_samples_from_file();
+void read_samples_from_file_diagram_battery();
+
+//void read_samples_from_file_scooter_battery();
+
+float T(float A);
 
 const uint8_t numberOf_X = 2 + 1;
 
@@ -47,7 +53,7 @@ const uint8_t numberOf_H = 2 + 1;
 
 const uint8_t numberOf_Y = 1;
 
-uint16_t const sample_numbers = 10;
+uint16_t const training_samples = 573;
 
 float epsilon;
 
@@ -69,28 +75,20 @@ float h[numberOf_H] = {};
 
 float d[numberOf_Y] = {};
 
-float amp_in[sample_numbers] {};
+float c_factor_training[training_samples] {};
 
-float total_watts[sample_numbers] {};
+float dischage_percentage_training[training_samples] {};
 
-float b1_out[sample_numbers] {};
-
-float b2_out[sample_numbers] {};
-
-float b3_out[sample_numbers] {};
-
-float b4_out[sample_numbers] {};
-
-float b5_out[sample_numbers] {};
-
-float b6_out[sample_numbers] {};
-
-float T(float A);
+float battery_out_training[training_samples] {};
 
 default_random_engine generator(time(0));
 
 int main()
 {
+    read_samples_from_file_diagram_battery();
+
+    return 0;
+
     init();
 
 #ifdef __linux__
@@ -164,18 +162,7 @@ void lavora()
     cout << "\n watts : " << x[1] * 1000.00f;
 
     cout << "\n batt1 : " << y[0] * 100.00f;
-
-    cout << "\n batt2 : " << y[1] * 100.00f;
-
-    cout << "\n batt3 : " << y[2] * 100.00f;
-
-    cout << "\n batt4 : " << y[3] * 100.00f;
-
-    cout << "\n batt5 : " << y[4] * 100.00f;
-
-    cout << "\n batt6 : " << y[5] * 100.00f;
 }
-
 
 void init()
 {
@@ -241,83 +228,83 @@ void init()
     }
 }
 
-void genera_esempi_for_battManag()
-{
-    srand(time(NULL));
-
-    int index = 0;
-
-    amp_in[index] = 0.030f;
-
-    total_watts[index] = 0.0100f;
-
-    b1_out[index] = 0.375f;
-
-    b2_out[index] = 0.379f;
-
-    b3_out[index] = 0.375f;
-
-    b4_out[index] = 0.379f;
-
-    b5_out[index] = 0.375f;
-
-    b6_out[index] = 0.379f;
-
-    index++;
-
-    amp_in[index] = 0.030f;
-
-    total_watts[index] = 0.0200f;
-
-    b1_out[index] = 0.335f;
-
-    b2_out[index] = 0.339f;
-
-    b3_out[index] = 0.335f;
-
-    b4_out[index] = 0.339f;
-
-    b5_out[index] = 0.335f;
-
-    b6_out[index] = 0.339f;
-
-    index++;
-
-    amp_in[index] = 0.030f;
-
-    total_watts[index] = 0.0300f;
-
-    b1_out[index] = 0.285f;
-
-    b2_out[index] = 0.289f;
-
-    b3_out[index] = 0.285f;
-
-    b4_out[index] = 0.289f;
-
-    b5_out[index] = 0.285f;
-
-    b6_out[index] = 0.289f;
-
-    index++;
-
-    amp_in[index] = 0.025f;
-
-    total_watts[index] = 0.0500f;
-
-    b1_out[index] = 0.125f;
-
-    b2_out[index] = 0.129f;
-
-    b3_out[index] = 0.125f;
-
-    b4_out[index] = 0.129f;
-
-    b5_out[index] = 0.125f;
-
-    b6_out[index] = 0.129f;
-
-}
+//void genera_esempi_for_battManag()
+//{
+//    srand(time(NULL));
+//
+//    int index = 0;
+//
+//    c_factor[index] = 0.030f;
+//
+//    dischage_percentage[index] = 0.0100f;
+//
+//    b1_out[index] = 0.375f;
+//
+//    b2_out[index] = 0.379f;
+//
+//    b3_out[index] = 0.375f;
+//
+//    b4_out[index] = 0.379f;
+//
+//    b5_out[index] = 0.375f;
+//
+//    b6_out[index] = 0.379f;
+//
+//    index++;
+//
+//    c_factor[index] = 0.030f;
+//
+//    dischage_percentage[index] = 0.0200f;
+//
+//    b1_out[index] = 0.335f;
+//
+//    b2_out[index] = 0.339f;
+//
+//    b3_out[index] = 0.335f;
+//
+//    b4_out[index] = 0.339f;
+//
+//    b5_out[index] = 0.335f;
+//
+//    b6_out[index] = 0.339f;
+//
+//    index++;
+//
+//    c_factor[index] = 0.030f;
+//
+//    dischage_percentage[index] = 0.0300f;
+//
+//    b1_out[index] = 0.285f;
+//
+//    b2_out[index] = 0.289f;
+//
+//    b3_out[index] = 0.285f;
+//
+//    b4_out[index] = 0.289f;
+//
+//    b5_out[index] = 0.285f;
+//
+//    b6_out[index] = 0.289f;
+//
+//    index++;
+//
+//    c_factor[index] = 0.025f;
+//
+//    dischage_percentage[index] = 0.0500f;
+//
+//    b1_out[index] = 0.125f;
+//
+//    b2_out[index] = 0.129f;
+//
+//    b3_out[index] = 0.125f;
+//
+//    b4_out[index] = 0.129f;
+//
+//    b5_out[index] = 0.125f;
+//
+//    b6_out[index] = 0.129f;
+//
+//}
 
 void esegui()
 {
@@ -366,7 +353,7 @@ void apprendi()
 
     //genera_esempi_for_battManag();
 
-    read_samples_from_file();
+    //read_samples_from_file_scooter_battery();
 
     auto start = std::chrono::system_clock::now();
 
@@ -374,23 +361,23 @@ void apprendi()
     {
         err_epoca = 0.00f;
 
-        for (unsigned long p = 0; p < sample_numbers; p++)
+        for (unsigned long p = 0; p < training_samples; p++)
         {
-            x[0] = amp_in[p];
+            x[0] = c_factor_training[p];
 
-            x[1] = total_watts[p];
+            x[1] = dischage_percentage_training[p];
 
-            d[0] = b1_out[p];
+            d[0] = battery_out_training[p];
 
-            d[1] = b2_out[p];
-
-            d[2] = b3_out[p];
-
-            d[3] = b4_out[p];
-
-            d[4] = b5_out[p];
-
-            d[5] = b6_out[p];
+//            d[1] = b2_out[p];
+//
+//            d[2] = b3_out[p];
+//
+//            d[3] = b4_out[p];
+//
+//            d[4] = b5_out[p];
+//
+//            d[5] = b6_out[p];
 
             esegui();
 
@@ -463,7 +450,7 @@ void apprendi()
 
 void back_propagate()
 {
-    float err_H[500];
+    float err_H[numberOf_H];
 
     float delta;
 
@@ -513,104 +500,160 @@ float T(float A)
     return 1.00f / (1.00f + pow(M_E, -A));
 }
 
-void read_samples_from_file()
+
+void read_samples_from_file_diagram_battery()
 {
-    uint16_t samples_index = 0;
+    std::string filename = "total.csv";
 
-    string col = "";
+    // Apertura del file
+    std::ifstream file(filename);
 
-    float col2 = 0.00f;
+    // Verifica se il file è stato aperto correttamente
+    if (!file.is_open()) {
 
-    ifstream in("BATT0.CSV");
-
-    getline(in, col, ';');
-
-    getline(in, col, ';');
-
-    getline(in, col, ';');
-
-    getline(in, col, ';');
-
-    uint8_t lines_index = 1;
-
-    while (in.good() && samples_index <= sample_numbers)
-    {
-        getline(in, col, ';');
-
-        getline(in, col, ';');
-
-        getline(in, col, ';');
-
-        col2 = stof(col);
-
-        switch (lines_index)
-        {
-        case 1:
-            b1_out[samples_index] = col2 / 100.00;
-
-            cout << "b1_out = " << col2  << "\r\n";
-
-            break;
-        case 2:
-            b2_out[samples_index] = col2 / 100.00;
-
-            cout << "b2_out = " << col2 << "\r\n";
-
-            break;
-        case 3:
-            b3_out[samples_index] = col2 / 100.00;
-
-            cout << "b3_out = " << col2 << "\r\n";
-
-            break;
-        case 4:
-            b4_out[samples_index] = col2 / 100.00;
-
-            cout << "b4_out = " << col2 << "\r\n";
-
-            break;
-        case 5:
-            b5_out[samples_index] = col2 / 100.00;
-
-            cout << "b5_out = " << col2 << "\r\n";
-
-            break;
-        case 6:
-            b6_out[samples_index] = col2 / 100.00;
-
-            cout << "b6_out = " << col2 << "\r\n";
-
-            break;
-        case 7:
-            total_watts[samples_index] = col2 / 1000.00;
-
-            cout << "total_watts = " << col2 << "\r\n";
-
-            break;
-        case 8:
-            amp_in[samples_index] = col2 / 1000.00;
-
-            cout << "amp_in = " << col2 << "\r\n";
-
-            lines_index = 0;
-
-            cout << "-----------> samples_index = " << samples_index << "\r\n";
-
-            samples_index++;
-
-            break;
-        default:
-
-            break;
-        }
-
-        getline(in, col, ';');
-
-        lines_index++;
-
-        //Sleep(200);
+        std::cerr << "Errore nell'apertura del file " << filename << std::endl;
     }
+
+    std::string line;
+
+    int index = 0;
+
+    // Leggi il file riga per riga
+    while (std::getline(file, line)) {
+
+        std::stringstream ss(line);
+
+        std::string item;
+
+        std::getline(ss, item, ';');
+
+        c_factor_training[index] = std::stod(item);
+
+        std::getline(ss, item, ';');
+
+        dischage_percentage_training[index] = std::stod(item);
+
+        std::getline(ss, item, ';');
+
+        battery_out_training[index] = std::stod(item);
+
+        // Esegui qualcosa con le variabili a, b, e c
+        // Ad esempio, stampale a video
+        std::cout << "c_factor_training: " << c_factor_training[index]
+        << "\tdischage_percentage_training: " << dischage_percentage_training[index]
+        << "\tbattery_out_training: " << battery_out_training[index] << std::endl;
+        index++;
+
+    }
+    cout << "number of training sample = \t" << index;
+
+    if(index != training_samples)
+    {
+        cout << "ALLERT!!!!!!! training sample different to index = \t" << index;
+    }
+
+    file.close();
+
 }
+
+//void read_samples_from_file_scooter_battery()
+//{
+//    uint16_t samples_index = 0;
+//
+//    string col = "";
+//
+//    float col2 = 0.00f;
+//
+//    ifstream in("BATT0.CSV");
+//
+//    getline(in, col, ';');
+//
+//    getline(in, col, ';');
+//
+//    getline(in, col, ';');
+//
+//    getline(in, col, ';');
+//
+//    uint8_t lines_index = 1;
+//
+//    while (in.good() && samples_index <= sample_file_line_numbers)
+//    {
+//        getline(in, col, ';');
+//
+//        getline(in, col, ';');
+//
+//        getline(in, col, ';');
+//
+//        col2 = stof(col);
+//
+//        switch (lines_index)
+//        {
+//        case 1:
+//            b1_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b1_out = " << col2  << "\r\n";
+//
+//            break;
+//        case 2:
+//            b2_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b2_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 3:
+//            b3_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b3_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 4:
+//            b4_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b4_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 5:
+//            b5_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b5_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 6:
+//            b6_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b6_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 7:
+//            dischage_percentage[samples_index] = col2 / 1000.00;
+//
+//            cout << "total_watts = " << col2 << "\r\n";
+//
+//            break;
+//        case 8:
+//            c_factor[samples_index] = col2 / 1000.00;
+//
+//            cout << "amp_in = " << col2 << "\r\n";
+//
+//            lines_index = 0;
+//
+//            cout << "-----------> samples_index = " << samples_index << "\r\n";
+//
+//            samples_index++;
+//
+//            break;
+//        default:
+//
+//            break;
+//        }
+//
+//        getline(in, col, ';');
+//
+//        lines_index++;
+//
+//        //Sleep(200);
+//    }
+//}
 
 void read_weights_from_file()
 {
