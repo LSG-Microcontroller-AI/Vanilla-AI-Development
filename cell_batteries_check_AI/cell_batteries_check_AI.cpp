@@ -7,9 +7,8 @@ using namespace std;
 #include <stdint.h>
 #include <sstream>
 
-
-#include <random>   // Per generazione numeri casuali
-#include <ctime>    // Per il seme random
+#include <random> // Per generazione numeri casuali
+#include <ctime>  // Per il seme random
 
 #ifdef __linux__
 
@@ -43,7 +42,7 @@ void write_weights_on_file();
 
 void read_samples_from_file_diagram_battery();
 
-//void read_samples_from_file_scooter_battery();
+// void read_samples_from_file_scooter_battery();
 
 float T(float A);
 
@@ -54,7 +53,6 @@ const uint8_t numberOf_H = 2 + 1;
 const uint8_t numberOf_Y = 1;
 
 uint16_t const training_samples = 573;
-
 
 float err_rete;
 
@@ -88,7 +86,7 @@ int main()
 
 #ifdef __linux__
 
-	//no sound on linux
+	// no sound on linux
 
 #elif _WIN32
 
@@ -130,9 +128,9 @@ int main()
 	cout << "\n Do you want to start learning\n";
 
 #ifdef __linux__
-	
+
 	response = std::cin.get();
-	
+
 	std::cin.ignore();
 
 #elif _WIN32
@@ -148,21 +146,21 @@ int main()
 		cout << "\n Start to learning......\n";
 
 		apprendi();
-
 	}
 
 	lavora();
 }
 
-double xavier_init(double n_x, double n_y) {
+double xavier_init(double n_x, double n_y)
+{
 	return sqrt(6.0) / sqrt(n_x + n_y);
 }
 
 void lavora()
 {
-	x[0] = 14.82f / 1000.00f;//AMPS
+	x[0] = 14.82f / 1000.00f; // AMPS
 
-	x[1] = 30.00f / 1000.00f;//WATTS
+	x[1] = 30.00f / 1000.00f; // WATTS
 
 	esegui();
 
@@ -175,19 +173,20 @@ void lavora()
 
 void init()
 {
-	double param = xavier_init(numberOf_X, numberOf_Y);
+	double param = xavier_init(numberOf_X - 1, numberOf_Y);
+
+	cout << "xavier glorot param : " << param << "/n/n";
 
 	_lower_bound_xavier = -param;
 
 	_upper_bound_xavier = param;
 
-
-	//Set Bias
+	// Set Bias
 	x[numberOf_X - 1] = 0.1f;
 
 	h[numberOf_H - 1] = 0.1f;
 
-	cout << "input elements:\n";
+	cout << "input elements initialization:\n\n";
 
 	for (int i = 0; i < (numberOf_X - 1); i++)
 	{
@@ -197,7 +196,7 @@ void init()
 	}
 	cout << "x[" << (int)(numberOf_X - 1) << "]" << "=" << x[numberOf_X - 1] << "-BIAS" << "\n";
 
-	cout << "hidden elements:\n";
+	cout << "hidden elements initialization:\n\n";
 
 	for (int i = 0; i < (numberOf_H - 1); i++)
 	{
@@ -205,9 +204,10 @@ void init()
 
 		cout << "h[" << i << "]" << "=" << h[i] << "\n";
 	}
+
 	cout << "h[" << (int)(numberOf_H - 1) << "]" << "=" << h[numberOf_H - 1] << "-BIAS" << "\n";
 
-	cout << "output elements:\n";
+	cout << "output elements initialization:\n\n";
 
 	for (int i = 0; i < numberOf_Y; i++)
 	{
@@ -216,9 +216,11 @@ void init()
 		cout << "y[" << i << "]=" << y[i] << "\n";
 	}
 
-	for (int i = 0; i < numberOf_X; i++)
+	cout << "W1 elements initialization:\n\n";
+
+	for (int i = 0; i < numberOf_X - 1; i++)
 	{
-		for (int k = 0; k < numberOf_H; k++)
+		for (int k = 0; k < numberOf_H - 1; k++)
 		{
 			W1[i][k] = get_random_number_from_xavier();
 
@@ -226,7 +228,7 @@ void init()
 		}
 	}
 
-	for (int k = 0; k < numberOf_H; k++)
+	for (int k = 0; k < numberOf_H - 1; k++)
 	{
 		for (int j = 0; j < numberOf_Y; j++)
 		{
@@ -237,98 +239,99 @@ void init()
 	}
 }
 
-//void genera_esempi_for_battManag()
+// void genera_esempi_for_battManag()
 //{
-//    srand(time(NULL));
+//     srand(time(NULL));
 //
-//    int index = 0;
+//     int index = 0;
 //
-//    c_factor[index] = 0.030f;
+//     c_factor[index] = 0.030f;
 //
-//    dischage_percentage[index] = 0.0100f;
+//     dischage_percentage[index] = 0.0100f;
 //
-//    b1_out[index] = 0.375f;
+//     b1_out[index] = 0.375f;
 //
-//    b2_out[index] = 0.379f;
+//     b2_out[index] = 0.379f;
 //
-//    b3_out[index] = 0.375f;
+//     b3_out[index] = 0.375f;
 //
-//    b4_out[index] = 0.379f;
+//     b4_out[index] = 0.379f;
 //
-//    b5_out[index] = 0.375f;
+//     b5_out[index] = 0.375f;
 //
-//    b6_out[index] = 0.379f;
+//     b6_out[index] = 0.379f;
 //
-//    index++;
+//     index++;
 //
-//    c_factor[index] = 0.030f;
+//     c_factor[index] = 0.030f;
 //
-//    dischage_percentage[index] = 0.0200f;
+//     dischage_percentage[index] = 0.0200f;
 //
-//    b1_out[index] = 0.335f;
+//     b1_out[index] = 0.335f;
 //
-//    b2_out[index] = 0.339f;
+//     b2_out[index] = 0.339f;
 //
-//    b3_out[index] = 0.335f;
+//     b3_out[index] = 0.335f;
 //
-//    b4_out[index] = 0.339f;
+//     b4_out[index] = 0.339f;
 //
-//    b5_out[index] = 0.335f;
+//     b5_out[index] = 0.335f;
 //
-//    b6_out[index] = 0.339f;
+//     b6_out[index] = 0.339f;
 //
-//    index++;
+//     index++;
 //
-//    c_factor[index] = 0.030f;
+//     c_factor[index] = 0.030f;
 //
-//    dischage_percentage[index] = 0.0300f;
+//     dischage_percentage[index] = 0.0300f;
 //
-//    b1_out[index] = 0.285f;
+//     b1_out[index] = 0.285f;
 //
-//    b2_out[index] = 0.289f;
+//     b2_out[index] = 0.289f;
 //
-//    b3_out[index] = 0.285f;
+//     b3_out[index] = 0.285f;
 //
-//    b4_out[index] = 0.289f;
+//     b4_out[index] = 0.289f;
 //
-//    b5_out[index] = 0.285f;
+//     b5_out[index] = 0.285f;
 //
-//    b6_out[index] = 0.289f;
+//     b6_out[index] = 0.289f;
 //
-//    index++;
+//     index++;
 //
-//    c_factor[index] = 0.025f;
+//     c_factor[index] = 0.025f;
 //
-//    dischage_percentage[index] = 0.0500f;
+//     dischage_percentage[index] = 0.0500f;
 //
-//    b1_out[index] = 0.125f;
+//     b1_out[index] = 0.125f;
 //
-//    b2_out[index] = 0.129f;
+//     b2_out[index] = 0.129f;
 //
-//    b3_out[index] = 0.125f;
+//     b3_out[index] = 0.125f;
 //
-//    b4_out[index] = 0.129f;
+//     b4_out[index] = 0.129f;
 //
-//    b5_out[index] = 0.125f;
+//     b5_out[index] = 0.125f;
 //
-//    b6_out[index] = 0.129f;
+//     b6_out[index] = 0.129f;
 //
-//}
+// }
 
 void esegui()
 {
 	float A;
 
-	for (int k = 0; k < (numberOf_H); k++)
+	for (int k = 0; k < (numberOf_H - 1); k++)
 	{
 		A = 0.00f;
 
-		for (int i = 0; i < numberOf_X; i++)
+		for (int i = 0; i < numberOf_X - 1; i++)
 		{
 
 			A = A + (W1[i][k] * x[i]);
-
 		}
+
+		A = A + x[numberOf_X - 1];
 
 		h[k] = T(A);
 	}
@@ -337,10 +340,12 @@ void esegui()
 	{
 		A = 0.00f;
 
-		for (int k = 0; k < numberOf_H; k++)
+		for (int k = 0; k < numberOf_H - 1; k++)
 		{
 			A = A + (W2[k][j] * h[k]);
 		}
+
+		A = A + x[numberOf_H - 1];
 
 		y[j] = T(A);
 	}
@@ -381,13 +386,13 @@ void apprendi()
 			//				cout << "\n problems \n\n";
 			//				cout << "press a key..\n\n";
 			//
-			//#ifdef __linux__
+			// #ifdef __linux__
 			//				getchar();
-			//#elif _WIN32
+			// #elif _WIN32
 			//				_getch();
-			//#else
+			// #else
 			//
-			//#endif
+			// #endif
 			//			}
 			//			else
 			//			{
@@ -498,8 +503,9 @@ void read_samples_from_file_diagram_battery()
 	// Apertura del file
 	std::ifstream file(filename);
 
-	// Verifica se il file è stato aperto correttamente
-	if (!file.is_open()) {
+	// Verifica se il file ï¿½ stato aperto correttamente
+	if (!file.is_open())
+	{
 
 		std::cerr << "Errore nell'apertura del file " << filename << std::endl;
 	}
@@ -509,7 +515,8 @@ void read_samples_from_file_diagram_battery()
 	int index = 0;
 
 	// Leggi il file riga per riga
-	while (std::getline(file, line)) {
+	while (std::getline(file, line))
+	{
 
 		std::stringstream ss(line);
 
@@ -530,10 +537,9 @@ void read_samples_from_file_diagram_battery()
 		// Esegui qualcosa con le variabili a, b, e c
 		// Ad esempio, stampale a video
 		std::cout << "c_factor_training: " << c_factor_training[index]
-			<< "\tdischage_percentage_training: " << dischage_percentage_training[index]
-			<< "\tbattery_out_training: " << battery_out_training[index] << std::endl;
+				  << "\tdischage_percentage_training: " << dischage_percentage_training[index]
+				  << "\tbattery_out_training: " << battery_out_training[index] << std::endl;
 		index++;
-
 	}
 	cout << "number of training sample = \t" << index;
 
@@ -543,107 +549,106 @@ void read_samples_from_file_diagram_battery()
 	}
 
 	file.close();
-
 }
 
-//void read_samples_from_file_scooter_battery()
+// void read_samples_from_file_scooter_battery()
 //{
-//    uint16_t samples_index = 0;
+//     uint16_t samples_index = 0;
 //
-//    string col = "";
+//     string col = "";
 //
-//    float col2 = 0.00f;
+//     float col2 = 0.00f;
 //
-//    ifstream in("BATT0.CSV");
+//     ifstream in("BATT0.CSV");
 //
-//    getline(in, col, ';');
+//     getline(in, col, ';');
 //
-//    getline(in, col, ';');
+//     getline(in, col, ';');
 //
-//    getline(in, col, ';');
+//     getline(in, col, ';');
 //
-//    getline(in, col, ';');
+//     getline(in, col, ';');
 //
-//    uint8_t lines_index = 1;
+//     uint8_t lines_index = 1;
 //
-//    while (in.good() && samples_index <= sample_file_line_numbers)
-//    {
-//        getline(in, col, ';');
+//     while (in.good() && samples_index <= sample_file_line_numbers)
+//     {
+//         getline(in, col, ';');
 //
-//        getline(in, col, ';');
+//         getline(in, col, ';');
 //
-//        getline(in, col, ';');
+//         getline(in, col, ';');
 //
-//        col2 = stof(col);
+//         col2 = stof(col);
 //
-//        switch (lines_index)
-//        {
-//        case 1:
-//            b1_out[samples_index] = col2 / 100.00;
+//         switch (lines_index)
+//         {
+//         case 1:
+//             b1_out[samples_index] = col2 / 100.00;
 //
-//            cout << "b1_out = " << col2  << "\r\n";
+//             cout << "b1_out = " << col2  << "\r\n";
 //
-//            break;
-//        case 2:
-//            b2_out[samples_index] = col2 / 100.00;
+//             break;
+//         case 2:
+//             b2_out[samples_index] = col2 / 100.00;
 //
-//            cout << "b2_out = " << col2 << "\r\n";
+//             cout << "b2_out = " << col2 << "\r\n";
 //
-//            break;
-//        case 3:
-//            b3_out[samples_index] = col2 / 100.00;
+//             break;
+//         case 3:
+//             b3_out[samples_index] = col2 / 100.00;
 //
-//            cout << "b3_out = " << col2 << "\r\n";
+//             cout << "b3_out = " << col2 << "\r\n";
 //
-//            break;
-//        case 4:
-//            b4_out[samples_index] = col2 / 100.00;
+//             break;
+//         case 4:
+//             b4_out[samples_index] = col2 / 100.00;
 //
-//            cout << "b4_out = " << col2 << "\r\n";
+//             cout << "b4_out = " << col2 << "\r\n";
 //
-//            break;
-//        case 5:
-//            b5_out[samples_index] = col2 / 100.00;
+//             break;
+//         case 5:
+//             b5_out[samples_index] = col2 / 100.00;
 //
-//            cout << "b5_out = " << col2 << "\r\n";
+//             cout << "b5_out = " << col2 << "\r\n";
 //
-//            break;
-//        case 6:
-//            b6_out[samples_index] = col2 / 100.00;
+//             break;
+//         case 6:
+//             b6_out[samples_index] = col2 / 100.00;
 //
-//            cout << "b6_out = " << col2 << "\r\n";
+//             cout << "b6_out = " << col2 << "\r\n";
 //
-//            break;
-//        case 7:
-//            dischage_percentage[samples_index] = col2 / 1000.00;
+//             break;
+//         case 7:
+//             dischage_percentage[samples_index] = col2 / 1000.00;
 //
-//            cout << "total_watts = " << col2 << "\r\n";
+//             cout << "total_watts = " << col2 << "\r\n";
 //
-//            break;
-//        case 8:
-//            c_factor[samples_index] = col2 / 1000.00;
+//             break;
+//         case 8:
+//             c_factor[samples_index] = col2 / 1000.00;
 //
-//            cout << "amp_in = " << col2 << "\r\n";
+//             cout << "amp_in = " << col2 << "\r\n";
 //
-//            lines_index = 0;
+//             lines_index = 0;
 //
-//            cout << "-----------> samples_index = " << samples_index << "\r\n";
+//             cout << "-----------> samples_index = " << samples_index << "\r\n";
 //
-//            samples_index++;
+//             samples_index++;
 //
-//            break;
-//        default:
+//             break;
+//         default:
 //
-//            break;
-//        }
+//             break;
+//         }
 //
-//        getline(in, col, ';');
+//         getline(in, col, ';');
 //
-//        lines_index++;
+//         lines_index++;
 //
-//        //Sleep(200);
-//    }
-//}
+//         //Sleep(200);
+//     }
+// }
 
 void read_weights_from_file()
 {
@@ -656,7 +661,7 @@ void read_weights_from_file()
 			for (int k = 0; k < numberOf_H; k++)
 			{
 				// cout << W2[k][j];
-				in.read((char*)&W2[k][j], sizeof(float));
+				in.read((char *)&W2[k][j], sizeof(float));
 			}
 		}
 
@@ -664,7 +669,7 @@ void read_weights_from_file()
 		{
 			for (int i = 0; i < numberOf_X; i++)
 			{
-				in.read((char*)&W1[i][k], sizeof(float));
+				in.read((char *)&W1[i][k], sizeof(float));
 			}
 		}
 	}
@@ -684,7 +689,7 @@ void write_weights_on_file()
 			{
 				for (int k = 0; k < numberOf_H; k++)
 				{
-					fw.write((char*)&W2[k][j], sizeof(float));
+					fw.write((char *)&W2[k][j], sizeof(float));
 				}
 			}
 
@@ -692,7 +697,7 @@ void write_weights_on_file()
 			{
 				for (int i = 0; i < numberOf_X; i++)
 				{
-					fw.write((char*)&W1[i][k], sizeof(float));
+					fw.write((char *)&W1[i][k], sizeof(float));
 				}
 			}
 
@@ -703,7 +708,7 @@ void write_weights_on_file()
 		else
 			cout << "Problem with opening file";
 	}
-	catch (const char* msg)
+	catch (const char *msg)
 	{
 		cerr << msg << endl;
 	}
