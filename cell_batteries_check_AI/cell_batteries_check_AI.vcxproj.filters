@@ -12,8 +12,5 @@
     <None Include="batManage1.bin">
       <Filter>files</Filter>
     </None>
-    <None Include="BATT0.CSV">
-      <Filter>files</Filter>
-    </None>
   </ItemGroup>
 </Project>

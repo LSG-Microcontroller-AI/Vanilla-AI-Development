@@ -5,6 +5,11 @@ using namespace std;
 #include <cmath>
 #include <stdlib.h>
 #include <stdint.h>
+#include <sstream>
+
+
+#include <random>   // Per generazione numeri casuali
+#include <ctime>    // Per il seme random
 
 #ifdef __linux__
 
@@ -24,7 +29,7 @@ void init();
 
 void lavora();
 
-int getRandomNumber();
+double get_random_number_from_xavier();
 
 void esegui();
 
@@ -36,51 +41,46 @@ void read_weights_from_file();
 
 void write_weights_on_file();
 
-void read_data_from_CSV_file();
+void read_samples_from_file_diagram_battery();
+
+//void read_samples_from_file_scooter_battery();
+
+float T(float A);
 
 const uint8_t numberOf_X = 2 + 1;
 
-const uint8_t numberOf_H = 5 + 1;
+const uint8_t numberOf_H = 2 + 1;
 
-const uint8_t numberOf_Y = 6;
+const uint8_t numberOf_Y = 1;
 
-uint16_t const sample_numbers = 10;
+uint16_t const training_samples = 573;
 
-float epsilon;
 
 float err_rete;
+
+double _lower_bound_xavier;
+
+double _upper_bound_xavier;
 
 float W1[numberOf_X][numberOf_H];
 
 float W2[numberOf_H][numberOf_Y];
 
-float x_input_level[numberOf_X] = {};
+float x[numberOf_X] = {};
 
-float y_output_level[numberOf_Y] = {};
+float y[numberOf_Y] = {};
 
-float h_hidden_level[numberOf_H] = {};
+float h[numberOf_H] = {};
 
-float d_expected_output_values[numberOf_Y] = {};
+float d[numberOf_Y] = {};
 
-float amp_in[sample_numbers]{};
+float c_factor_training[training_samples]{};
 
-float watts_hour[sample_numbers]{};
+float dischage_percentage_training[training_samples]{};
 
-float b1_out[sample_numbers]{};
+float battery_out_training[training_samples]{};
 
-float b2_out[sample_numbers]{};
-
-float b3_out[sample_numbers]{};
-
-float b4_out[sample_numbers]{};
-
-float b5_out[sample_numbers]{};
-
-float b6_out[sample_numbers]{};
-
-int battery_total_watts = 1440;
-
-float T(float A);
+default_random_engine generator(time(0));
 
 int main()
 {
@@ -88,8 +88,14 @@ int main()
 
 #ifdef __linux__
 
+	//no sound on linux
+
 #elif _WIN32
+
 	Beep(3000, 200);
+
+#else
+
 #endif
 
 	char response;
@@ -97,10 +103,17 @@ int main()
 	cout << "\n Do you want load the weights file\n";
 
 #ifdef __linux__
+
 	response = std::cin.get();
+
 	std::cin.ignore();
+
 #elif _WIN32
+
 	response = _getch();
+
+#else
+
 #endif
 
 	if (response == 'y')
@@ -117,10 +130,17 @@ int main()
 	cout << "\n Do you want to start learning\n";
 
 #ifdef __linux__
+	
 	response = std::cin.get();
+	
 	std::cin.ignore();
+
 #elif _WIN32
+
 	response = _getch();
+
+#else
+
 #endif
 
 	if (response == 'y')
@@ -134,72 +154,73 @@ int main()
 	lavora();
 }
 
+double xavier_init(double n_x, double n_y) {
+	return sqrt(6.0) / sqrt(n_x + n_y);
+}
+
 void lavora()
 {
-	x_input_level[0] = 14.82f / 1000.00f;//AMPS
+	x[0] = 14.82f / 1000.00f;//AMPS
 
-	x_input_level[1] = 30.00f / 1000.00f;//WATTS
+	x[1] = 30.00f / 1000.00f;//WATTS
 
 	esegui();
 
-	cout << "\n amps : " << x_input_level[0] * 1000.00f;
+	cout << "\n amps : " << x[0] * 1000.00f;
 
-	cout << "\n watts : " << x_input_level[1] * 1000.00f;
+	cout << "\n watts : " << x[1] * 1000.00f;
 
-	cout << "\n batt1 : " << y_output_level[0] * 100.00f;
-
-	cout << "\n batt2 : " << y_output_level[1] * 100.00f;
-
-	cout << "\n batt3 : " << y_output_level[2] * 100.00f;
-
-	cout << "\n batt4 : " << y_output_level[3] * 100.00f;
-
-	cout << "\n batt5 : " << y_output_level[4] * 100.00f;
-
-	cout << "\n batt6 : " << y_output_level[5] * 100.00f;
+	cout << "\n batt1 : " << y[0] * 100.00f;
 }
 
 void init()
 {
-	//Set Bias
-	x_input_level[numberOf_X - 1] = 1.00f;
+	double param = xavier_init(numberOf_X, numberOf_Y);
 
-	h_hidden_level[numberOf_H - 1] = 1.00f;
+	_lower_bound_xavier = -param;
+
+	_upper_bound_xavier = param;
+
+
+	//Set Bias
+	x[numberOf_X - 1] = 0.1f;
+
+	h[numberOf_H - 1] = 0.1f;
 
 	cout << "input elements:\n";
 
 	for (int i = 0; i < (numberOf_X - 1); i++)
 	{
-		x_input_level[i] = 0.00f;
+		x[i] = 0.00f;
 
-		cout << "x[" << i << "]" << "=" << x_input_level[i] << "\n";
+		cout << "x[" << i << "]" << "=" << x[i] << "\n";
 	}
-	cout << "x[" << (int)(numberOf_X - 1) << "]" << "=" << x_input_level[numberOf_X - 1] << "-BIAS" << "\n";
+	cout << "x[" << (int)(numberOf_X - 1) << "]" << "=" << x[numberOf_X - 1] << "-BIAS" << "\n";
 
 	cout << "hidden elements:\n";
 
 	for (int i = 0; i < (numberOf_H - 1); i++)
 	{
-		h_hidden_level[i] = 0.00f;
+		h[i] = 0.00f;
 
-		cout << "h[" << i << "]" << "=" << h_hidden_level[i] << "\n";
+		cout << "h[" << i << "]" << "=" << h[i] << "\n";
 	}
-	cout << "h[" << (int)(numberOf_H - 1) << "]" << "=" << h_hidden_level[numberOf_H - 1] << "-BIAS" << "\n";
+	cout << "h[" << (int)(numberOf_H - 1) << "]" << "=" << h[numberOf_H - 1] << "-BIAS" << "\n";
 
 	cout << "output elements:\n";
 
 	for (int i = 0; i < numberOf_Y; i++)
 	{
-		y_output_level[i] = 0.00f;
+		y[i] = 0.00f;
 
-		cout << "y[" << i << "]=" << y_output_level[i] << "\n";
+		cout << "y[" << i << "]=" << y[i] << "\n";
 	}
 
 	for (int i = 0; i < numberOf_X; i++)
 	{
-		for (int k = 0; k < numberOf_H - 1; k++)
+		for (int k = 0; k < numberOf_H; k++)
 		{
-			W1[i][k] = (float)((getRandomNumber() - 50.00f) / 100.00f);
+			W1[i][k] = get_random_number_from_xavier();
 
 			cout << "W1[" << i << "]" << "[" << k << "]" << "=" << W1[i][k] << "\n";
 		}
@@ -209,7 +230,7 @@ void init()
 	{
 		for (int j = 0; j < numberOf_Y; j++)
 		{
-			W2[k][j] = (float)((getRandomNumber() - 50.00f) / 100.00f);
+			W2[k][j] = get_random_number_from_xavier();
 
 			cout << "W2[" << k << "]" << "[" << j << "]" << "=" << W2[k][j] << "\n";
 		}
@@ -222,9 +243,9 @@ void init()
 //
 //    int index = 0;
 //
-//    amp_in[index] = 0.030f;
+//    c_factor[index] = 0.030f;
 //
-//    watts_hour[index] = 0.0100f;
+//    dischage_percentage[index] = 0.0100f;
 //
 //    b1_out[index] = 0.375f;
 //
@@ -240,9 +261,9 @@ void init()
 //
 //    index++;
 //
-//    amp_in[index] = 0.030f;
+//    c_factor[index] = 0.030f;
 //
-//    watts_hour[index] = 0.0200f;
+//    dischage_percentage[index] = 0.0200f;
 //
 //    b1_out[index] = 0.335f;
 //
@@ -258,9 +279,9 @@ void init()
 //
 //    index++;
 //
-//    amp_in[index] = 0.030f;
+//    c_factor[index] = 0.030f;
 //
-//    watts_hour[index] = 0.0300f;
+//    dischage_percentage[index] = 0.0300f;
 //
 //    b1_out[index] = 0.285f;
 //
@@ -276,9 +297,9 @@ void init()
 //
 //    index++;
 //
-//    amp_in[index] = 0.025f;
+//    c_factor[index] = 0.025f;
 //
-//    watts_hour[index] = 0.0500f;
+//    dischage_percentage[index] = 0.0500f;
 //
 //    b1_out[index] = 0.125f;
 //
@@ -298,18 +319,18 @@ void esegui()
 {
 	float A;
 
-	for (int k = 0; k < (numberOf_H - 1); k++)
+	for (int k = 0; k < (numberOf_H); k++)
 	{
 		A = 0.00f;
 
 		for (int i = 0; i < numberOf_X; i++)
 		{
 
-			A = A + (W1[i][k] * x_input_level[i]);
+			A = A + (W1[i][k] * x[i]);
 
 		}
 
-		h_hidden_level[k] = T(A);
+		h[k] = T(A);
 	}
 
 	for (int j = 0; j < numberOf_Y; j++)
@@ -318,28 +339,20 @@ void esegui()
 
 		for (int k = 0; k < numberOf_H; k++)
 		{
-			A = A + (W2[k][j] * h_hidden_level[k]);
+			A = A + (W2[k][j] * h[k]);
 		}
 
-		y_output_level[j] = T(A);
+		y[j] = T(A);
 	}
 }
 
 void apprendi()
 {
-	//float err_epoca_first = 0;
-
 	float err_epoca;
 
-	const float err_amm = 0.001f;
+	float err_amm = 0.001f;
 
 	int epoca = 0;
-
-	epsilon = 0.7f;
-
-	//genera_esempi_for_battManag();
-
-	read_data_from_CSV_file();
 
 	auto start = std::chrono::system_clock::now();
 
@@ -347,23 +360,13 @@ void apprendi()
 	{
 		err_epoca = 0.00f;
 
-		for (unsigned long p = 0; p < sample_numbers; p++)
+		for (unsigned long p = 0; p < training_samples; p++)
 		{
-			x_input_level[0] = amp_in[p];
+			x[0] = c_factor_training[p];
 
-			x_input_level[1] = watts_hour[p];
+			x[1] = dischage_percentage_training[p];
 
-			d_expected_output_values[0] = b1_out[p];
-
-			d_expected_output_values[1] = b2_out[p];
-
-			d_expected_output_values[2] = b3_out[p];
-
-			d_expected_output_values[3] = b4_out[p];
-
-			d_expected_output_values[4] = b5_out[p];
-
-			d_expected_output_values[5] = b6_out[p];
+			d[0] = battery_out_training[p];
 
 			esegui();
 
@@ -425,8 +428,7 @@ void apprendi()
 	cout << "press a key..\n\n";
 
 #ifdef __linux__
-	response = std::cin.get();
-	std::cin.ignore();
+	getchar();
 #elif _WIN32
 	_getch();
 #else
@@ -436,7 +438,9 @@ void apprendi()
 
 void back_propagate()
 {
-	float err_H[500];
+	float epsilon = 0.7f;
+
+	float err_H[numberOf_H];
 
 	float delta;
 
@@ -448,259 +452,198 @@ void back_propagate()
 
 	for (int j = 0; j < numberOf_Y; j++)
 	{
-		if (abs(d_expected_output_values[j] - y_output_level[j]) > err_rete)
+		if (abs(d[j] - y[j]) > err_rete)
 		{
-			err_rete = abs(d_expected_output_values[j] - y_output_level[j]);
+			err_rete = abs(d[j] - y[j]);
 		}
-		delta = (d_expected_output_values[j] - y_output_level[j]) * y_output_level[j] * (1.00f - y_output_level[j]);
+
+		delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
 
 		for (int k = 0; k < numberOf_H; k++)
 		{
 			err_H[k] = err_H[k] + (delta * W2[k][j]);
 
-			W2[k][j] = W2[k][j] + (epsilon * delta * h_hidden_level[k]);
+			W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
 		}
 	}
 	for (int k = 0; k < numberOf_H - 1; k++)
 	{
-		delta = err_H[k] * h_hidden_level[k] * (1.00f - h_hidden_level[k]);
+		delta = err_H[k] * h[k] * (1.00f - h[k]);
 
 		for (int i = 0; i < numberOf_X; i++)
 		{
-			W1[i][k] = W1[i][k] + (epsilon * delta * x_input_level[i]);
+			W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
 		}
 	}
 }
 
-int getRandomNumber()
+double get_random_number_from_xavier()
 {
-	return (rand() % (0 - 100 + 1) + 0);
-	//return (rand() % 60 + 10) / 1000.00f;
-	// return (rand() % (0 - 49 + 1) + 0);
-}
+	uniform_real_distribution<double> distribution(_lower_bound_xavier, _upper_bound_xavier);
 
-//float getRandomNumberFloat1()
-//{
-//
-//	//return (rand() % 1700 + 2500) / 10000.00f;
-//	return (rand() % 1200 + 3000) / 10000.00f;
-//}
-//
-//float getRandomNumberFloat2()
-//{
-//	//return (rand() % 1700 + 2500) / 10000.00f;
-//	return (rand() % 4200 + 3000) / 10000.00f;
-//}
+	double random_value = distribution(generator);
+
+	return random_value;
+}
 
 float T(float A)
 {
 	return 1.00f / (1.00f + pow(M_E, -A));
 }
 
-void read_data_from_CSV_file()
+void read_samples_from_file_diagram_battery()
 {
-	uint16_t samples_index = 0;
+	std::string filename = "total.csv";
 
-	string col = "";
+	// Apertura del file
+	std::ifstream file(filename);
 
-	float col2 = 0.00f;
+	// Verifica se il file è stato aperto correttamente
+	if (!file.is_open()) {
 
-	ifstream file_in("BATT0.CSV");
-
-	getline(file_in, col, ';');
-
-	getline(file_in, col, ';');
-
-	getline(file_in, col, ';');
-
-	getline(file_in, col, ';');
-
-	uint8_t lines_index = 1;
-
-	while (file_in.good() && samples_index <= sample_numbers)
-	{
-		getline(file_in, col, ';');
-
-		getline(file_in, col, ';');
-
-		getline(file_in, col, ';');
-
-		col2 = stof(col);
-
-		switch (lines_index)
-		{
-		case 1:
-			b1_out[samples_index] = col2 / 100.00;
-
-			cout << "b1_out = " << col2 << "\r\n";
-
-			break;
-		case 2:
-			b2_out[samples_index] = col2 / 100.00;
-
-			cout << "b2_out = " << col2 << "\r\n";
-
-			break;
-		case 3:
-			b3_out[samples_index] = col2 / 100.00;
-
-			cout << "b3_out = " << col2 << "\r\n";
-
-			break;
-		case 4:
-			b4_out[samples_index] = col2 / 100.00;
-
-			cout << "b4_out = " << col2 << "\r\n";
-
-			break;
-		case 5:
-			b5_out[samples_index] = col2 / 100.00;
-
-			cout << "b5_out = " << col2 << "\r\n";
-
-			break;
-		case 6:
-			b6_out[samples_index] = col2 / 100.00;
-
-			cout << "b6_out = " << col2 << "\r\n";
-
-			break;
-		case 7:
-			watts_hour[samples_index] = col2 / 1000.00;
-
-			cout << "total_watts = " << col2 << "\r\n";
-
-			break;
-		case 8:
-			amp_in[samples_index] = col2 / 1000.00;
-
-			cout << "amp_in = " << col2 << "\r\n";
-
-			lines_index = 0;
-
-			cout << "-----------> samples_index = " << samples_index << "\r\n";
-
-			samples_index++;
-
-			break;
-		default:
-
-			break;
-		}
-
-		getline(file_in, col, ';');
-
-		lines_index++;
-
-		//Sleep(200);
+		std::cerr << "Errore nell'apertura del file " << filename << std::endl;
 	}
+
+	std::string line;
+
+	int index = 0;
+
+	// Leggi il file riga per riga
+	while (std::getline(file, line)) {
+
+		std::stringstream ss(line);
+
+		std::string item;
+
+		std::getline(ss, item, ';');
+
+		c_factor_training[index] = std::stod(item);
+
+		std::getline(ss, item, ';');
+
+		dischage_percentage_training[index] = std::stod(item);
+
+		std::getline(ss, item, ';');
+
+		battery_out_training[index] = std::stod(item);
+
+		// Esegui qualcosa con le variabili a, b, e c
+		// Ad esempio, stampale a video
+		std::cout << "c_factor_training: " << c_factor_training[index]
+			<< "\tdischage_percentage_training: " << dischage_percentage_training[index]
+			<< "\tbattery_out_training: " << battery_out_training[index] << std::endl;
+		index++;
+
+	}
+	cout << "number of training sample = \t" << index;
+
+	if (index != training_samples)
+	{
+		cout << "ALLERT!!!!!!! training sample different to index = \t" << index;
+	}
+
+	file.close();
+
 }
 
-void read_expected_data_from_diagram_file(string file_name)
-{
-	uint16_t samples_index = 0;
-
-	string col = "";
-
-	float col2 = 0.00f;
-
-	ifstream file_in(file_name);
-
-	uint8_t lines_index = 1;
-
-	if (!file_in.is_open()) {
-		std::cerr << "Errore nell'apertura del file!" << std::endl;
-	}
-
-	while (file_in.good())
-	{
-		if (getline(file_in, col, ';')) {
-			std::cout << "Percentage watts: " << col << std::endl;
-
-		}
-		else {
-			break;  // Esce dal ciclo se non ci sono più dati da leggere
-		}
-
-		if (getline(file_in, col, ';')) {
-			std::cout << "Colonna 2: " << col << std::endl;
-		}
-		else {
-			break;  // Esce dal ciclo se non ci sono più dati da leggere
-		}
-
-		col2 = stof(col);
-
-		file_in.close();  // Chiudi il file
-
-		switch (lines_index)
-		{
-		case 1:
-			b1_out[samples_index] = col2 / 100.00;
-
-			cout << "b1_out = " << col2 << "\r\n";
-
-			break;
-		case 2:
-			b2_out[samples_index] = col2 / 100.00;
-
-			cout << "b2_out = " << col2 << "\r\n";
-
-			break;
-		case 3:
-			b3_out[samples_index] = col2 / 100.00;
-
-			cout << "b3_out = " << col2 << "\r\n";
-
-			break;
-		case 4:
-			b4_out[samples_index] = col2 / 100.00;
-
-			cout << "b4_out = " << col2 << "\r\n";
-
-			break;
-		case 5:
-			b5_out[samples_index] = col2 / 100.00;
-
-			cout << "b5_out = " << col2 << "\r\n";
-
-			break;
-		case 6:
-			b6_out[samples_index] = col2 / 100.00;
-
-			cout << "b6_out = " << col2 << "\r\n";
-
-			break;
-		case 7:
-			watts_hour[samples_index] = col2 / 1000.00;
-
-			cout << "total_watts = " << col2 << "\r\n";
-
-			break;
-		case 8:
-			amp_in[samples_index] = col2 / 1000.00;
-
-			cout << "amp_in = " << col2 << "\r\n";
-
-			lines_index = 0;
-
-			cout << "-----------> samples_index = " << samples_index << "\r\n";
-
-			samples_index++;
-
-			break;
-		default:
-
-			break;
-		}
-
-		getline(file_in, col, ';');
-
-		lines_index++;
-
-		//Sleep(200);
-	}
-}
+//void read_samples_from_file_scooter_battery()
+//{
+//    uint16_t samples_index = 0;
+//
+//    string col = "";
+//
+//    float col2 = 0.00f;
+//
+//    ifstream in("BATT0.CSV");
+//
+//    getline(in, col, ';');
+//
+//    getline(in, col, ';');
+//
+//    getline(in, col, ';');
+//
+//    getline(in, col, ';');
+//
+//    uint8_t lines_index = 1;
+//
+//    while (in.good() && samples_index <= sample_file_line_numbers)
+//    {
+//        getline(in, col, ';');
+//
+//        getline(in, col, ';');
+//
+//        getline(in, col, ';');
+//
+//        col2 = stof(col);
+//
+//        switch (lines_index)
+//        {
+//        case 1:
+//            b1_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b1_out = " << col2  << "\r\n";
+//
+//            break;
+//        case 2:
+//            b2_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b2_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 3:
+//            b3_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b3_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 4:
+//            b4_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b4_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 5:
+//            b5_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b5_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 6:
+//            b6_out[samples_index] = col2 / 100.00;
+//
+//            cout << "b6_out = " << col2 << "\r\n";
+//
+//            break;
+//        case 7:
+//            dischage_percentage[samples_index] = col2 / 1000.00;
+//
+//            cout << "total_watts = " << col2 << "\r\n";
+//
+//            break;
+//        case 8:
+//            c_factor[samples_index] = col2 / 1000.00;
+//
+//            cout << "amp_in = " << col2 << "\r\n";
+//
+//            lines_index = 0;
+//
+//            cout << "-----------> samples_index = " << samples_index << "\r\n";
+//
+//            samples_index++;
+//
+//            break;
+//        default:
+//
+//            break;
+//        }
+//
+//        getline(in, col, ';');
+//
+//        lines_index++;
+//
+//        //Sleep(200);
+//    }
+//}
 
 void read_weights_from_file()
 {
@@ -729,7 +672,6 @@ void read_weights_from_file()
 
 void write_weights_on_file()
 {
-	float f1 = 0.00f;
 	try
 	{
 		cout << "\nWriting to file... \n\n";
@@ -746,7 +688,7 @@ void write_weights_on_file()
 				}
 			}
 
-			for (int k = 0; k < numberOf_H - 1; k++)
+			for (int k = 0; k < numberOf_H; k++)
 			{
 				for (int i = 0; i < numberOf_X; i++)
 				{
@@ -766,6 +708,3 @@ void write_weights_on_file()
 		cerr << msg << endl;
 	}
 }
-
-
-
