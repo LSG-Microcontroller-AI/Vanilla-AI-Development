@@ -42,27 +42,31 @@ void write_weights_on_file();
 
 void read_samples_from_file_diagram_battery();
 
-// void read_samples_from_file_scooter_battery();
-
 float T(float A);
+
+float err_epoca = 0.00f;
+
+float err_rete = 0.00f;
+
+float _err_amm = 0.1f;
+
+float epsilon = 0.30f;
 
 const uint8_t numberOf_X = 2 + 1;
 
-const uint8_t numberOf_H = 2 + 1;
+const uint8_t numberOf_H = 4 + 1;
 
 const uint8_t numberOf_Y = 1;
 
 uint16_t const training_samples = 573;
 
-float err_rete;
-
 double _lower_bound_xavier;
 
 double _upper_bound_xavier;
 
-float W1[numberOf_X][numberOf_H];
+float W1[numberOf_X - 1][numberOf_H - 1];
 
-float W2[numberOf_H][numberOf_Y];
+float W2[numberOf_H - 1][numberOf_Y];
 
 float x[numberOf_X] = {};
 
@@ -158,17 +162,13 @@ double xavier_init(double n_x, double n_y)
 
 void lavora()
 {
-	x[0] = 14.82f / 1000.00f; // AMPS
+	x[0] = 0.2f / 10.00f; // AMPS
 
-	x[1] = 30.00f / 1000.00f; // WATTS
+	x[1] = 50.00f / 1000.00f; // WATTS
 
 	esegui();
 
-	cout << "\n amps : " << x[0] * 1000.00f;
-
-	cout << "\n watts : " << x[1] * 1000.00f;
-
-	cout << "\n batt1 : " << y[0] * 100.00f;
+	cout << "\n batt1 : " << y[0] * 10.00f;
 }
 
 void init()
@@ -182,9 +182,9 @@ void init()
 	_upper_bound_xavier = param;
 
 	// Set Bias
-	x[numberOf_X - 1] = 0.1f;
+	x[numberOf_X - 1] = 0.10f;
 
-	h[numberOf_H - 1] = 0.1f;
+	h[numberOf_H - 1] = 0.10f;
 
 	cout << "input elements initialization:\n\n";
 
@@ -239,84 +239,6 @@ void init()
 	}
 }
 
-// void genera_esempi_for_battManag()
-//{
-//     srand(time(NULL));
-//
-//     int index = 0;
-//
-//     c_factor[index] = 0.030f;
-//
-//     dischage_percentage[index] = 0.0100f;
-//
-//     b1_out[index] = 0.375f;
-//
-//     b2_out[index] = 0.379f;
-//
-//     b3_out[index] = 0.375f;
-//
-//     b4_out[index] = 0.379f;
-//
-//     b5_out[index] = 0.375f;
-//
-//     b6_out[index] = 0.379f;
-//
-//     index++;
-//
-//     c_factor[index] = 0.030f;
-//
-//     dischage_percentage[index] = 0.0200f;
-//
-//     b1_out[index] = 0.335f;
-//
-//     b2_out[index] = 0.339f;
-//
-//     b3_out[index] = 0.335f;
-//
-//     b4_out[index] = 0.339f;
-//
-//     b5_out[index] = 0.335f;
-//
-//     b6_out[index] = 0.339f;
-//
-//     index++;
-//
-//     c_factor[index] = 0.030f;
-//
-//     dischage_percentage[index] = 0.0300f;
-//
-//     b1_out[index] = 0.285f;
-//
-//     b2_out[index] = 0.289f;
-//
-//     b3_out[index] = 0.285f;
-//
-//     b4_out[index] = 0.289f;
-//
-//     b5_out[index] = 0.285f;
-//
-//     b6_out[index] = 0.289f;
-//
-//     index++;
-//
-//     c_factor[index] = 0.025f;
-//
-//     dischage_percentage[index] = 0.0500f;
-//
-//     b1_out[index] = 0.125f;
-//
-//     b2_out[index] = 0.129f;
-//
-//     b3_out[index] = 0.125f;
-//
-//     b4_out[index] = 0.129f;
-//
-//     b5_out[index] = 0.125f;
-//
-//     b6_out[index] = 0.129f;
-//
-// }
-
 void esegui()
 {
 	float A;
@@ -331,6 +253,7 @@ void esegui()
 			A = A + (W1[i][k] * x[i]);
 		}
 
+		//insert X bias 
 		A = A + x[numberOf_X - 1];
 
 		h[k] = T(A);
@@ -345,7 +268,8 @@ void esegui()
 			A = A + (W2[k][j] * h[k]);
 		}
 
-		A = A + x[numberOf_H - 1];
+		//insert H bias 
+		A = A + h[numberOf_H - 1];
 
 		y[j] = T(A);
 	}
@@ -353,13 +277,11 @@ void esegui()
 
 void apprendi()
 {
-	float err_epoca;
-
-	float err_amm = 0.001f;
-
 	int epoca = 0;
 
 	auto start = std::chrono::system_clock::now();
+
+	read_samples_from_file_diagram_battery();
 
 	do
 	{
@@ -367,11 +289,11 @@ void apprendi()
 
 		for (unsigned long p = 0; p < training_samples; p++)
 		{
-			x[0] = c_factor_training[p];
+			x[0] = c_factor_training[p] / 10.00f;
 
-			x[1] = dischage_percentage_training[p];
+			x[1] = dischage_percentage_training[p] /1000.00f;
 
-			d[0] = battery_out_training[p];
+			d[0] = battery_out_training[p] / 10.00f;
 
 			esegui();
 
@@ -401,15 +323,15 @@ void apprendi()
 		}
 		epoca = epoca + 1;
 
-		cout << "\nVersion: Y \n\n";
+		/*cout << "\nVersion: Y \n\n";
 
-		cout << "stop when err_epoca < " << err_amm << "\n\n";
+		cout << "stop when err_epoca < " << err_amm << "\n\n";*/
 
 		cout << "epoca:" << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
 
-		write_weights_on_file();
+		//write_weights_on_file();
 
-	} while (err_epoca > err_amm);
+	} while (err_epoca > _err_amm);
 
 	auto end = std::chrono::system_clock::now();
 
@@ -443,42 +365,45 @@ void apprendi()
 
 void back_propagate()
 {
-	float epsilon = 0.7f;
+	float err_H[numberOf_H - 1];
 
-	float err_H[numberOf_H];
+	float delta = 0.00f;
 
-	float delta;
+	err_rete = 0.00f;
 
-	for (int k = 0; k < numberOf_H; k++)
+	for (int k = 0; k < numberOf_H - 1; k++)
 	{
 		err_H[k] = 0.00f;
 	}
-	err_rete = 0.00f;
 
 	for (int j = 0; j < numberOf_Y; j++)
 	{
 		if (abs(d[j] - y[j]) > err_rete)
 		{
-			err_rete = abs(d[j] - y[j]);
+			err_rete = abs(  - y[j]);
 		}
 
 		delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
 
-		for (int k = 0; k < numberOf_H; k++)
+		for (int k = 0; k < numberOf_H - 1; k++)
 		{
 			err_H[k] = err_H[k] + (delta * W2[k][j]);
 
 			W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
 		}
+
+		// Aggiornamento del bias del livello di uscita
+		h[numberOf_H - 1] += epsilon * delta;
 	}
 	for (int k = 0; k < numberOf_H - 1; k++)
 	{
 		delta = err_H[k] * h[k] * (1.00f - h[k]);
 
-		for (int i = 0; i < numberOf_X; i++)
+		for (int i = 0; i < numberOf_X - 1; i++)
 		{
 			W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
 		}
+		x[numberOf_X - 1] += epsilon * delta;
 	}
 }
 
@@ -551,105 +476,6 @@ void read_samples_from_file_diagram_battery()
 	file.close();
 }
 
-// void read_samples_from_file_scooter_battery()
-//{
-//     uint16_t samples_index = 0;
-//
-//     string col = "";
-//
-//     float col2 = 0.00f;
-//
-//     ifstream in("BATT0.CSV");
-//
-//     getline(in, col, ';');
-//
-//     getline(in, col, ';');
-//
-//     getline(in, col, ';');
-//
-//     getline(in, col, ';');
-//
-//     uint8_t lines_index = 1;
-//
-//     while (in.good() && samples_index <= sample_file_line_numbers)
-//     {
-//         getline(in, col, ';');
-//
-//         getline(in, col, ';');
-//
-//         getline(in, col, ';');
-//
-//         col2 = stof(col);
-//
-//         switch (lines_index)
-//         {
-//         case 1:
-//             b1_out[samples_index] = col2 / 100.00;
-//
-//             cout << "b1_out = " << col2  << "\r\n";
-//
-//             break;
-//         case 2:
-//             b2_out[samples_index] = col2 / 100.00;
-//
-//             cout << "b2_out = " << col2 << "\r\n";
-//
-//             break;
-//         case 3:
-//             b3_out[samples_index] = col2 / 100.00;
-//
-//             cout << "b3_out = " << col2 << "\r\n";
-//
-//             break;
-//         case 4:
-//             b4_out[samples_index] = col2 / 100.00;
-//
-//             cout << "b4_out = " << col2 << "\r\n";
-//
-//             break;
-//         case 5:
-//             b5_out[samples_index] = col2 / 100.00;
-//
-//             cout << "b5_out = " << col2 << "\r\n";
-//
-//             break;
-//         case 6:
-//             b6_out[samples_index] = col2 / 100.00;
-//
-//             cout << "b6_out = " << col2 << "\r\n";
-//
-//             break;
-//         case 7:
-//             dischage_percentage[samples_index] = col2 / 1000.00;
-//
-//             cout << "total_watts = " << col2 << "\r\n";
-//
-//             break;
-//         case 8:
-//             c_factor[samples_index] = col2 / 1000.00;
-//
-//             cout << "amp_in = " << col2 << "\r\n";
-//
-//             lines_index = 0;
-//
-//             cout << "-----------> samples_index = " << samples_index << "\r\n";
-//
-//             samples_index++;
-//
-//             break;
-//         default:
-//
-//             break;
-//         }
-//
-//         getline(in, col, ';');
-//
-//         lines_index++;
-//
-//         //Sleep(200);
-//     }
-// }
-
 void read_weights_from_file()
 {
 	std::ifstream in("batManage1.bin", std::ios_base::binary);
@@ -687,19 +513,23 @@ void write_weights_on_file()
 		{
 			for (int j = 0; j < numberOf_Y; j++)
 			{
-				for (int k = 0; k < numberOf_H; k++)
+				for (int k = 0; k < numberOf_H - 1; k++)
 				{
 					fw.write((char *)&W2[k][j], sizeof(float));
 				}
 			}
 
-			for (int k = 0; k < numberOf_H; k++)
+			for (int k = 0; k < numberOf_H - 1; k++)
 			{
-				for (int i = 0; i < numberOf_X; i++)
+				for (int i = 0; i < numberOf_X - 1; i++)
 				{
 					fw.write((char *)&W1[i][k], sizeof(float));
 				}
 			}
+
+			fw.write((char*)&h[numberOf_H - 1], sizeof(float));
+
+			fw.write((char*)&y[numberOf_Y - 1], sizeof(float));
 
 			fw.close();
 
