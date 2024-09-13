@@ -48,7 +48,7 @@ float err_epoca = 0.00f;
 
 float err_rete = 0.00f;
 
-float _err_amm = 0.1f;
+float _err_amm = 0.001f;
 
 float epsilon = 0.30f;
 
@@ -171,6 +171,75 @@ void lavora()
 	cout << "\n batt1 : " << y[0] * 10.00f;
 }
 
+void apprendi()
+{
+	int epoca = 0;
+
+	auto start = std::chrono::system_clock::now();
+
+	read_samples_from_file_diagram_battery();
+
+	do
+	{
+		err_epoca = 0.00f;
+
+		for (unsigned long p = 0; p < training_samples; p++)
+		{
+			x[0] = c_factor_training[p] / 10.00f;
+
+			x[1] = dischage_percentage_training[p] / 1000.00f;
+
+			d[0] = battery_out_training[p] / 10.00f;
+
+			esegui();
+
+			back_propagate();
+
+			if (err_rete > err_epoca)
+			{
+				err_epoca = err_rete;
+			}
+		}
+		epoca = epoca + 1;
+
+		//cout << "stop when err_epoca < " << _err_amm << "\n\n";
+
+		cout << "epoca:" << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
+
+		write_weights_on_file();
+
+	} while (err_epoca > _err_amm);
+
+	auto end = std::chrono::system_clock::now();
+
+	std::chrono::duration<double> elapsed_seconds = end - start;
+
+	double sample_time = elapsed_seconds.count();
+
+	cout << "learning time : " << (int)(sample_time / 60) << " minutes.\n";
+
+#ifdef __linux__
+	// linux code goes here
+#elif _WIN32
+	Beep(3000, 200);
+	Beep(3000, 200);
+	Beep(3000, 200);
+	Beep(3000, 200);
+	Beep(3000, 200);
+#else
+#endif
+
+	cout << "press a key..\n\n";
+
+#ifdef __linux__
+	getchar();
+#elif _WIN32
+	_getch();
+#else
+
+#endif
+}
+
 void init()
 {
 	double param = xavier_init(numberOf_X - 1, numberOf_Y);
@@ -275,94 +344,6 @@ void esegui()
 	}
 }
 
-void apprendi()
-{
-	int epoca = 0;
-
-	auto start = std::chrono::system_clock::now();
-
-	read_samples_from_file_diagram_battery();
-
-	do
-	{
-		err_epoca = 0.00f;
-
-		for (unsigned long p = 0; p < training_samples; p++)
-		{
-			x[0] = c_factor_training[p] / 10.00f;
-
-			x[1] = dischage_percentage_training[p] /1000.00f;
-
-			d[0] = battery_out_training[p] / 10.00f;
-
-			esegui();
-
-			back_propagate();
-
-			if (err_rete > err_epoca)
-			{
-				err_epoca = err_rete;
-			}
-			//			if ((err_epoca_first >= err_epoca) /*&& err_epoca_first != 0.00f*/)
-			//			{
-			//				cout << "\n problems \n\n";
-			//				cout << "press a key..\n\n";
-			//
-			// #ifdef __linux__
-			//				getchar();
-			// #elif _WIN32
-			//				_getch();
-			// #else
-			//
-			// #endif
-			//			}
-			//			else
-			//			{
-			//				err_epoca_first = err_epoca;
-			//			}
-		}
-		epoca = epoca + 1;
-
-		/*cout << "\nVersion: Y \n\n";
-
-		cout << "stop when err_epoca < " << err_amm << "\n\n";*/
-
-		cout << "epoca:" << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
-
-		//write_weights_on_file();
-
-	} while (err_epoca > _err_amm);
-
-	auto end = std::chrono::system_clock::now();
-
-	std::chrono::duration<double> elapsed_seconds = end - start;
-
-	double sample_time = elapsed_seconds.count();
-
-	cout << "learning time : " << (int)(sample_time / 60) << " minutes.\n";
-
-#ifdef __linux__
-	// linux code goes here
-#elif _WIN32
-	Beep(3000, 200);
-	Beep(3000, 200);
-	Beep(3000, 200);
-	Beep(3000, 200);
-	Beep(3000, 200);
-#else
-#endif
-
-	cout << "press a key..\n\n";
-
-#ifdef __linux__
-	getchar();
-#elif _WIN32
-	_getch();
-#else
-
-#endif
-}
-
 void back_propagate()
 {
 	float err_H[numberOf_H - 1];
@@ -380,7 +361,7 @@ void back_propagate()
 	{
 		if (abs(d[j] - y[j]) > err_rete)
 		{
-			err_rete = abs(  - y[j]);
+			err_rete = abs(d[j] - y[j]);
 		}
 
 		delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
@@ -484,7 +465,7 @@ void read_weights_from_file()
 	{
 		for (int j = 0; j < numberOf_Y; j++)
 		{
-			for (int k = 0; k < numberOf_H; k++)
+			for (int k = 0; k < numberOf_H - 1; k++)
 			{
 				// cout << W2[k][j];
 				in.read((char *)&W2[k][j], sizeof(float));
@@ -493,11 +474,16 @@ void read_weights_from_file()
 
 		for (int k = 0; k < numberOf_H - 1; k++)
 		{
-			for (int i = 0; i < numberOf_X; i++)
+			for (int i = 0; i < numberOf_X - 1; i++)
 			{
 				in.read((char *)&W1[i][k], sizeof(float));
 			}
 		}
+
+		in.read((char*)&h[numberOf_H - 1], sizeof(float));
+
+		in.read((char*)&y[numberOf_Y - 1], sizeof(float));
+
 	}
 }
 
@@ -505,7 +491,7 @@ void write_weights_on_file()
 {
 	try
 	{
-		cout << "\nWriting to file... \n\n";
+		//cout << "\nWriting to file... \n\n";
 
 		std::ofstream fw("batManage1.bin", std::ios_base::binary);
 
@@ -533,7 +519,7 @@ void write_weights_on_file()
 
 			fw.close();
 
-			cout << "\nFile closed... \n\n";
+			//cout << "\nFile closed... \n\n";
 		}
 		else
 			cout << "Problem with opening file";
