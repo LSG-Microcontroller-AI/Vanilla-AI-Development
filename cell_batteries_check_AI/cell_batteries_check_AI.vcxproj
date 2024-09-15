@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="batManage1.bin" />
+    <None Include="total.csv" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

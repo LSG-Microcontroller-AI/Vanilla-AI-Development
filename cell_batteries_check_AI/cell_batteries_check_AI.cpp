@@ -48,12 +48,12 @@ float err_epoca = 0.00f;
 
 float err_rete = 0.00f;
 
-float _err_amm = 0.001f;
+float _err_amm = 0.03f;
 
 float epsilon = 0.30f;
 
 const uint8_t numberOf_X = 2 + 1;
-
+ 
 const uint8_t numberOf_H = 4 + 1;
 
 const uint8_t numberOf_Y = 1;
@@ -87,6 +87,10 @@ default_random_engine generator(time(0));
 int main()
 {
 	init();
+
+	/*write_weights_on_file();
+
+	return 0;*/
 
 #ifdef __linux__
 
@@ -153,6 +157,8 @@ int main()
 	}
 
 	lavora();
+
+	cout << "press a key..\n\n";
 }
 
 double xavier_init(double n_x, double n_y)
@@ -162,7 +168,7 @@ double xavier_init(double n_x, double n_y)
 
 void lavora()
 {
-	x[0] = 0.2f / 10.00f; // AMPS
+	x[0] = 0.2f / 10.00f; // AMPS 
 
 	x[1] = 50.00f / 1000.00f; // WATTS
 
@@ -197,6 +203,7 @@ void apprendi()
 
 			if (err_rete > err_epoca)
 			{
+				//cout << "ciclo: " << p << "  errore_rete= " << err_rete << "\n";
 				err_epoca = err_rete;
 			}
 		}
@@ -204,7 +211,7 @@ void apprendi()
 
 		//cout << "stop when err_epoca < " << _err_amm << "\n\n";
 
-		cout << "epoca:" << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
+		cout << "epoca: " << epoca << " errore_epoca= " << err_epoca << "\n";; //<< " errore_rete=" << err_rete << "\n";
 
 		write_weights_on_file();
 
@@ -229,7 +236,7 @@ void apprendi()
 #else
 #endif
 
-	cout << "press a key..\n\n";
+	
 
 #ifdef __linux__
 	getchar();
@@ -263,6 +270,7 @@ void init()
 
 		cout << "x[" << i << "]" << "=" << x[i] << "\n";
 	}
+
 	cout << "x[" << (int)(numberOf_X - 1) << "]" << "=" << x[numberOf_X - 1] << "-BIAS" << "\n";
 
 	cout << "hidden elements initialization:\n\n";
@@ -384,6 +392,7 @@ void back_propagate()
 		{
 			W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
 		}
+
 		x[numberOf_X - 1] += epsilon * delta;
 	}
 }
@@ -463,27 +472,25 @@ void read_weights_from_file()
 
 	if (in.good())
 	{
+		for (int i = 0; i < numberOf_X - 1; i++)
+		{
+			for (int k = 0; k < numberOf_H - 1; k++)
+			{
+				in.read((char*)&W1[i][k], sizeof(float));
+			}
+		}
+
 		for (int j = 0; j < numberOf_Y; j++)
 		{
 			for (int k = 0; k < numberOf_H - 1; k++)
 			{
-				// cout << W2[k][j];
-				in.read((char *)&W2[k][j], sizeof(float));
+				in.read((char*)&W2[k][j], sizeof(float));
 			}
 		}
 
-		for (int k = 0; k < numberOf_H - 1; k++)
-		{
-			for (int i = 0; i < numberOf_X - 1; i++)
-			{
-				in.read((char *)&W1[i][k], sizeof(float));
-			}
-		}
+		in.read((char*)&x[numberOf_X - 1], sizeof(float));
 
 		in.read((char*)&h[numberOf_H - 1], sizeof(float));
-
-		in.read((char*)&y[numberOf_Y - 1], sizeof(float));
-
 	}
 }
 
@@ -497,25 +504,27 @@ void write_weights_on_file()
 
 		if (fw.good())
 		{
-			for (int j = 0; j < numberOf_Y; j++)
+			for (int i = 0; i < numberOf_X - 1; i++)
 			{
 				for (int k = 0; k < numberOf_H - 1; k++)
-				{
-					fw.write((char *)&W2[k][j], sizeof(float));
-				}
-			}
-
-			for (int k = 0; k < numberOf_H - 1; k++)
-			{
-				for (int i = 0; i < numberOf_X - 1; i++)
 				{
 					fw.write((char *)&W1[i][k], sizeof(float));
 				}
 			}
 
+			for (int j = 0; j < numberOf_Y; j++)
+			{
+				for (int k = 0; k < numberOf_H - 1; k++)
+				{
+					fw.write((char*)&W2[k][j], sizeof(float));
+				}
+			}
+
+			fw.write((char*)&x[numberOf_X - 1], sizeof(float));
+
 			fw.write((char*)&h[numberOf_H - 1], sizeof(float));
 
-			fw.write((char*)&y[numberOf_Y - 1], sizeof(float));
+			
 
 			fw.close();
 
