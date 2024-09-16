@@ -44,21 +44,23 @@ void read_samples_from_file_diagram_battery();
 
 float T(float A);
 
+float TLR(float A);
+
 float err_epoca = 0.00f;
 
 float err_rete = 0.00f;
 
-float _err_amm = 0.03f;
+float _err_amm = 0.030f; 
 
-float epsilon = 0.30f;
+float epsilon = 0.30f; 
 
 const uint8_t numberOf_X = 2 + 1;
  
-const uint8_t numberOf_H = 4 + 1;
+const uint8_t numberOf_H = 7 + 1;
 
 const uint8_t numberOf_Y = 1;
 
-uint16_t const training_samples = 573;
+uint16_t const training_samples = 490;
 
 double _lower_bound_xavier;
 
@@ -168,9 +170,25 @@ double xavier_init(double n_x, double n_y)
 
 void lavora()
 {
-	x[0] = 0.2f / 10.00f; // AMPS 
+	x[0] = 5.00f / 10.00f; // AMPS 
 
-	x[1] = 50.00f / 1000.00f; // WATTS
+	x[1] = 10.00f / 100.00f; // WATTS
+
+	esegui();
+
+	cout << "\n batt1 : " << y[0] * 10.00f;
+
+	x[0] = 5.00f / 10.00f; // AMPS 
+
+	x[1] = 50.00f / 100.00f; // WATTS
+
+	esegui();
+
+	cout << "\n batt1 : " << y[0] * 10.00f;
+
+	x[0] = 5.00f / 10.00f; // AMPS 
+
+	x[1] = 98.00f / 100.00f; // WATTS
 
 	esegui();
 
@@ -180,6 +198,8 @@ void lavora()
 void apprendi()
 {
 	int epoca = 0;
+
+	int cout_counter = 0;
 
 	auto start = std::chrono::system_clock::now();
 
@@ -193,7 +213,7 @@ void apprendi()
 		{
 			x[0] = c_factor_training[p] / 10.00f;
 
-			x[1] = dischage_percentage_training[p] / 1000.00f;
+			x[1] = dischage_percentage_training[p] / 100.00f;
 
 			d[0] = battery_out_training[p] / 10.00f;
 
@@ -207,11 +227,14 @@ void apprendi()
 				err_epoca = err_rete;
 			}
 		}
-		epoca = epoca + 1;
+		epoca++;
+		cout_counter++;
 
 		//cout << "stop when err_epoca < " << _err_amm << "\n\n";
-
-		cout << "epoca: " << epoca << " errore_epoca= " << err_epoca << "\n";; //<< " errore_rete=" << err_rete << "\n";
+		if (cout_counter == 10000) {
+			cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
+			cout_counter = 0;
+		}
 
 		write_weights_on_file();
 
@@ -251,16 +274,16 @@ void init()
 {
 	double param = xavier_init(numberOf_X - 1, numberOf_Y);
 
-	cout << "xavier glorot param : " << param << "/n/n";
+	cout << "xavier glorot param : " << param << "\n\n";
 
 	_lower_bound_xavier = -param;
 
 	_upper_bound_xavier = param;
 
 	// Set Bias
-	x[numberOf_X - 1] = 0.10f;
+	x[numberOf_X - 1] = 0.20f;
 
-	h[numberOf_H - 1] = 0.10f;
+	h[numberOf_H - 1] = 0.20f;
 
 	cout << "input elements initialization:\n\n";
 
@@ -326,7 +349,6 @@ void esegui()
 
 		for (int i = 0; i < numberOf_X - 1; i++)
 		{
-
 			A = A + (W1[i][k] * x[i]);
 		}
 
@@ -413,7 +435,7 @@ float T(float A)
 
 void read_samples_from_file_diagram_battery()
 {
-	std::string filename = "total.csv";
+	std::string filename = "parziale.csv";
 
 	// Apertura del file
 	std::ifstream file(filename);
@@ -537,4 +559,9 @@ void write_weights_on_file()
 	{
 		cerr << msg << endl;
 	}
+}
+
+float TLR(float x)
+{
+	return x > 0 ? x : 0.01f * x; // Leaky ReLU
 }

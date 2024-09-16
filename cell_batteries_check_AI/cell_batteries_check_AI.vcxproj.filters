@@ -9,10 +9,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="batManage1.bin">
+    <None Include="total.csv">
       <Filter>files</Filter>
     </None>
-    <None Include="total.csv">
+    <None Include="parziale.csv">
+      <Filter>files</Filter>
+    </None>
+    <None Include="batManage1.bin">
       <Filter>files</Filter>
     </None>
   </ItemGroup>
