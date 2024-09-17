@@ -50,17 +50,17 @@ float err_epoca = 0.00f;
 
 float err_rete = 0.00f;
 
-float _err_amm = 0.011f; 
+float _err_amm = 0.0032f; 
 
-float epsilon = 0.2f; 
+float epsilon = 0.9f;
 
 const uint8_t numberOf_X = 2 + 1;
- 
-const uint8_t numberOf_H = 5 + 1;
+
+const uint16_t numberOf_H = 20 + 1;
 
 const uint8_t numberOf_Y = 1;
 
-uint16_t const training_samples = 21;
+uint16_t const training_samples = 490;
 
 double _lower_bound_xavier;
 
@@ -69,14 +69,14 @@ double _upper_bound_xavier;
 float W1[numberOf_X - 1][numberOf_H - 1] = { 0 };
 
 float W2[numberOf_H - 1][numberOf_Y] = { 0 };
+ 
+float x[numberOf_X] = { 0 };
 
-float x[numberOf_X] = {0};
+float y[numberOf_Y] = { 0 };
 
-float y[numberOf_Y] = {0};
+float h[numberOf_H] = { 0 };
 
-float h[numberOf_H] = {0};
-
-float d[numberOf_Y] = {0};
+float d[numberOf_Y] = { 0 };
 
 float c_factor_training[training_samples]{};
 
@@ -88,6 +88,7 @@ default_random_engine generator(time(0));
 
 int main()
 {
+
 #ifdef __linux__
 
 #elif _WIN32
@@ -107,9 +108,9 @@ int main()
 
 	init();
 
-	/*write_weights_on_file();
+	//write_weights_on_file();
 
-	return 0;*/
+	//return 0;
 
 #ifdef __linux__
 
@@ -187,29 +188,29 @@ double xavier_init(double n_x, double n_y)
 
 void lavora()
 {
-	x[0] = 0.20f / 10.00f; 
+	x[0] = 0.20f / 100.00f;
 
-	x[1] = 30.00f / 100.00f; 
-
-	esegui();
-
-	cout << "\n batt1 : " << y[0] * 10.00f;
-
-	x[0] = 1.00f / 10.00f; // AMPS 
-
-	x[1] = 2.00f / 100.00f; // WATTS
+	x[1] = 30.00f / 100.00f;
 
 	esegui();
 
-	cout << "\n batt1 : " << y[0] * 10.00f;
+	cout << "\n x[0]=" << x[0] * 100.00f << " x[1]=" << x[1] * 100.00f << " y[0]=" << y[0] * 100.00f << "\n";
 
-	x[0] = 5.00f / 10.00f; // AMPS 
+	x[0] = 0.50f / 100.00f;
 
-	x[1] = 100.00f / 100.00f; // WATTS
+	x[1] = 50.00f / 100.00f;
 
 	esegui();
 
-	cout << "\n batt1 : " << y[0] * 10.00f;
+	cout << "\n x[0]=" << x[0] * 100.00f << " x[1]=" << x[1] * 100.00f << " y[0]=" << y[0] * 100.00f << "\n";
+
+	x[0] = 5.00f / 100.00f;
+
+	x[1] = 89.00f / 100.00f;
+
+	esegui();
+
+	cout << "\n x[0]=" << x[0] * 100.00f << " x[1]=" << x[1] * 100.00f << " y[0]=" << y[0] * 100.00f << "\n";
 }
 
 void apprendi()
@@ -222,17 +223,19 @@ void apprendi()
 
 	read_samples_from_file_diagram_battery();
 
+	float err_epoca_min_value = FLT_MAX;
+
 	do
 	{
 		err_epoca = 0.00f;
 
 		for (unsigned long p = 0; p < training_samples; p++)
 		{
-			x[0] = c_factor_training[p] / 10.00f;
+			x[0] = c_factor_training[p] / 100.00f;
 
 			x[1] = dischage_percentage_training[p] / 100.00f;
 
-			d[0] = battery_out_training[p] / 10.00f;
+			d[0] = battery_out_training[p] / 100.00f;
 
 			esegui();
 
@@ -244,18 +247,36 @@ void apprendi()
 				err_epoca = err_rete;
 			}
 		}
+		if (err_epoca_min_value > err_epoca) { err_epoca_min_value = err_epoca; }
+		else {
+			
+		}
+
 		epoca++;
+
 		cout_counter++;
 
 		//cout << "stop when err_epoca < " << _err_amm << "\n\n";
-		if (cout_counter == 1) {
-			cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
+		if (cout_counter == 10000) {
+			std::cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << " min. errore_epoca= " << err_epoca_min_value << "\n";
 			cout_counter = 0;
+			
+			std::cout << "Vuoi cambiare la variabile Epsilon? (S per si, Y per no): ";
+			char risposta = _getch();  // Legge il carattere premuto
+			std::cout << risposta << std::endl;  // Mostra il carattere inseriton
+
+			if (risposta == 'S' || risposta == 's') {
+				std::cout << "Inserisci il nuovo valore per Epsilon: ";
+				std::cin >> epsilon;
+				std::cout << "La nuova variabile Epsilon è stata impostata a: " << epsilon << std::endl;
+			}
+			else {
+				std::cout << "La variabile Epsilon non è stata modificata. Il valore attuale è: " << epsilon << std::endl;
+			}
 		}
-
-		write_weights_on_file();
-
 	} while (err_epoca > _err_amm);
+
+	write_weights_on_file();
 
 	auto end = std::chrono::system_clock::now();
 
@@ -276,7 +297,7 @@ void apprendi()
 #else
 #endif
 
-	
+
 
 #ifdef __linux__
 	getchar();
@@ -452,7 +473,7 @@ float T(float A)
 
 void read_samples_from_file_diagram_battery()
 {
-	std::string filename = "parziale2.csv";
+	std::string filename = "parziale.csv";
 
 	// Apertura del file
 	std::ifstream file(filename);
@@ -490,8 +511,8 @@ void read_samples_from_file_diagram_battery()
 		// Esegui qualcosa con le variabili a, b, e c
 		// Ad esempio, stampale a video
 		std::cout << "c_factor_training: " << c_factor_training[index]
-				  << "\tdischage_percentage_training: " << dischage_percentage_training[index]
-				  << "\tbattery_out_training: " << battery_out_training[index] << std::endl;
+			<< "\tdischage_percentage_training: " << dischage_percentage_training[index]
+			<< "\tbattery_out_training: " << battery_out_training[index] << std::endl;
 		index++;
 	}
 	cout << "number of training sample = \t" << index << "\n\n";
@@ -501,7 +522,7 @@ void read_samples_from_file_diagram_battery()
 	if (index != training_samples)
 	{
 		cout << "\n\nALLERT!!!!!!! training sample different to index = \t" << index << "\n";
-		system("pause"); 
+		system("pause");
 	}
 
 	file.close();
@@ -549,7 +570,7 @@ void write_weights_on_file()
 			{
 				for (int k = 0; k < numberOf_H - 1; k++)
 				{
-					fw.write((char *)&W1[i][k], sizeof(float));
+					fw.write((char*)&W1[i][k], sizeof(float));
 				}
 			}
 
@@ -565,7 +586,7 @@ void write_weights_on_file()
 
 			fw.write((char*)&h[numberOf_H - 1], sizeof(float));
 
-			
+
 
 			fw.close();
 
@@ -574,7 +595,7 @@ void write_weights_on_file()
 		else
 			cout << "Problem with opening file";
 	}
-	catch (const char *msg)
+	catch (const char* msg)
 	{
 		cerr << msg << endl;
 	}
