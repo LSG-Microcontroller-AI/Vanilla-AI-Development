@@ -23,6 +23,7 @@
   <ItemGroup>
     <None Include="batManage1.bin" />
     <None Include="parziale.csv" />
+    <None Include="parziale2.csv" />
     <None Include="total.csv" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

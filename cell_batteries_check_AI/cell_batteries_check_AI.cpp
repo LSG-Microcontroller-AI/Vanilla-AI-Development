@@ -50,33 +50,33 @@ float err_epoca = 0.00f;
 
 float err_rete = 0.00f;
 
-float _err_amm = 0.030f; 
+float _err_amm = 0.011f; 
 
-float epsilon = 0.30f; 
+float epsilon = 0.2f; 
 
 const uint8_t numberOf_X = 2 + 1;
  
-const uint8_t numberOf_H = 7 + 1;
+const uint8_t numberOf_H = 5 + 1;
 
 const uint8_t numberOf_Y = 1;
 
-uint16_t const training_samples = 490;
+uint16_t const training_samples = 21;
 
 double _lower_bound_xavier;
 
 double _upper_bound_xavier;
 
-float W1[numberOf_X - 1][numberOf_H - 1];
+float W1[numberOf_X - 1][numberOf_H - 1] = { 0 };
 
-float W2[numberOf_H - 1][numberOf_Y];
+float W2[numberOf_H - 1][numberOf_Y] = { 0 };
 
-float x[numberOf_X] = {};
+float x[numberOf_X] = {0};
 
-float y[numberOf_Y] = {};
+float y[numberOf_Y] = {0};
 
-float h[numberOf_H] = {};
+float h[numberOf_H] = {0};
 
-float d[numberOf_Y] = {};
+float d[numberOf_Y] = {0};
 
 float c_factor_training[training_samples]{};
 
@@ -88,6 +88,23 @@ default_random_engine generator(time(0));
 
 int main()
 {
+#ifdef __linux__
+
+#elif _WIN32
+
+	HWND consoleWindow = GetConsoleWindow();
+
+	// Sposta e massimizza la finestra
+	SetWindowPos(consoleWindow, nullptr, -1920, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+	ShowWindow(consoleWindow, SW_MAXIMIZE);
+	//std::cout << "La console è stata spostata e massimizzata!" << std::endl;
+
+	//system("pause");
+
+#else
+
+#endif
+
 	init();
 
 	/*write_weights_on_file();
@@ -170,9 +187,17 @@ double xavier_init(double n_x, double n_y)
 
 void lavora()
 {
-	x[0] = 5.00f / 10.00f; // AMPS 
+	x[0] = 0.20f / 10.00f; 
 
-	x[1] = 10.00f / 100.00f; // WATTS
+	x[1] = 30.00f / 100.00f; 
+
+	esegui();
+
+	cout << "\n batt1 : " << y[0] * 10.00f;
+
+	x[0] = 1.00f / 10.00f; // AMPS 
+
+	x[1] = 2.00f / 100.00f; // WATTS
 
 	esegui();
 
@@ -180,15 +205,7 @@ void lavora()
 
 	x[0] = 5.00f / 10.00f; // AMPS 
 
-	x[1] = 50.00f / 100.00f; // WATTS
-
-	esegui();
-
-	cout << "\n batt1 : " << y[0] * 10.00f;
-
-	x[0] = 5.00f / 10.00f; // AMPS 
-
-	x[1] = 98.00f / 100.00f; // WATTS
+	x[1] = 100.00f / 100.00f; // WATTS
 
 	esegui();
 
@@ -231,7 +248,7 @@ void apprendi()
 		cout_counter++;
 
 		//cout << "stop when err_epoca < " << _err_amm << "\n\n";
-		if (cout_counter == 10000) {
+		if (cout_counter == 1) {
 			cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << "\n";
 			cout_counter = 0;
 		}
@@ -435,7 +452,7 @@ float T(float A)
 
 void read_samples_from_file_diagram_battery()
 {
-	std::string filename = "parziale.csv";
+	std::string filename = "parziale2.csv";
 
 	// Apertura del file
 	std::ifstream file(filename);
@@ -454,7 +471,6 @@ void read_samples_from_file_diagram_battery()
 	// Leggi il file riga per riga
 	while (std::getline(file, line))
 	{
-
 		std::stringstream ss(line);
 
 		std::string item;
@@ -478,11 +494,14 @@ void read_samples_from_file_diagram_battery()
 				  << "\tbattery_out_training: " << battery_out_training[index] << std::endl;
 		index++;
 	}
-	cout << "number of training sample = \t" << index;
+	cout << "number of training sample = \t" << index << "\n\n";
+
+	system("pause");
 
 	if (index != training_samples)
 	{
-		cout << "ALLERT!!!!!!! training sample different to index = \t" << index;
+		cout << "\n\nALLERT!!!!!!! training sample different to index = \t" << index << "\n";
+		system("pause"); 
 	}
 
 	file.close();

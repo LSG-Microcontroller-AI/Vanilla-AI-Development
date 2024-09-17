@@ -18,5 +18,8 @@
     <None Include="batManage1.bin">
       <Filter>files</Filter>
     </None>
+    <None Include="parziale2.csv">
+      <Filter>files</Filter>
+    </None>
   </ItemGroup>
 </Project>
