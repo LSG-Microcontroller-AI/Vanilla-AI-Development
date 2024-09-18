@@ -6,9 +6,12 @@ using namespace std;
 #include <stdlib.h>
 #include <stdint.h>
 #include <sstream>
-
-#include <random> // Per generazione numeri casuali
-#include <ctime>  // Per il seme random
+#include <chrono>
+#include <ctime>
+#include <string>
+#include <fstream>
+#include <cfloat>
+#include <random> 
 
 #ifdef __linux__
 
@@ -18,11 +21,6 @@ using namespace std;
 #else
 
 #endif
-
-#include <chrono>
-#include <ctime>
-#include <string>
-#include <fstream>
 
 void init();
 
@@ -41,6 +39,10 @@ void read_weights_from_file();
 void write_weights_on_file();
 
 void read_samples_from_file_diagram_battery();
+
+void initilize_gnuplot();
+
+void plot_point(double x,double y);
 
 float T(float A);
 
@@ -91,8 +93,6 @@ FILE* gnuplotPipe;
 int main()
 {
 
-
-
 #ifdef __linux__
 
 #elif _WIN32
@@ -109,6 +109,8 @@ int main()
 #else
 
 #endif
+
+	initilize_gnuplot();
 
 	init();
 
@@ -273,6 +275,7 @@ void apprendi()
 		if (cout_counter == 10000)
 		{
 			std::cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << " min. errore_epoca= " << err_epoca_min_value << "\n";
+			
 			cout_counter = 0;
 
 			//if ((err_epoca >= err_epoca_first) && err_epoca_first > 0.00f)
@@ -479,6 +482,8 @@ void back_propagate()
 			err_rete = abs(d[j] - y[j]);
 		}
 
+		plot_point(W2[0][0],err_rete);
+
 		delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
 
 		for (int k = 0; k < numberOf_H - 1; k++)
@@ -487,6 +492,8 @@ void back_propagate()
 
 			W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
 		}
+
+		
 
 		// Aggiornamento del bias del livello di uscita
 		h[numberOf_H - 1] += epsilon * delta;
@@ -564,7 +571,15 @@ void read_samples_from_file_diagram_battery()
 	}
 	cout << "number of training sample = \t" << index << "\n\n";
 
-	system("pause");
+
+#ifdef __linux__
+
+#elif _WIN32
+system("pause");
+#else
+
+#endif
+	
 
 	if (index != training_samples)
 	{
@@ -664,4 +679,8 @@ void initilize_gnuplot() {
 	}
 
 	fprintf(gnuplotPipe, "plot '-' with lines, '-' with points pointtype 7\n");
+}
+
+void plot_point(double x,double y){
+    fprintf(gnuplotPipe, "%lf %lf\n", x, y);
 }
