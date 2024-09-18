@@ -46,17 +46,17 @@ float T(float A);
 
 float TLR(float A);
 
-float err_epoca = 0.00f;
-
 float err_rete = 0.00f;
 
-float _err_amm = 0.0032f; 
+//float _err_amm = 0.00315f;
 
-float epsilon = 0.9f;
+float _err_amm = 0.0030f;
+
+float epsilon = 0.40f;
 
 const uint8_t numberOf_X = 2 + 1;
 
-const uint16_t numberOf_H = 20 + 1;
+const uint16_t numberOf_H = 5 + 1;
 
 const uint8_t numberOf_Y = 1;
 
@@ -69,7 +69,7 @@ double _upper_bound_xavier;
 float W1[numberOf_X - 1][numberOf_H - 1] = { 0 };
 
 float W2[numberOf_H - 1][numberOf_Y] = { 0 };
- 
+
 float x[numberOf_X] = { 0 };
 
 float y[numberOf_Y] = { 0 };
@@ -86,8 +86,12 @@ float battery_out_training[training_samples]{};
 
 default_random_engine generator(time(0));
 
+FILE* gnuplotPipe;
+
 int main()
 {
+
+
 
 #ifdef __linux__
 
@@ -188,9 +192,9 @@ double xavier_init(double n_x, double n_y)
 
 void lavora()
 {
-	x[0] = 0.20f / 100.00f;
+	x[0] = 2.00f / 100.00f;
 
-	x[1] = 30.00f / 100.00f;
+	x[1] = 93.00f / 100.00f;
 
 	esegui();
 
@@ -217,7 +221,16 @@ void apprendi()
 {
 	int epoca = 0;
 
+	float err_epoca_first = 0.00f;
+
+	float err_epoca;
+
 	int cout_counter = 0;
+
+	float epsilon_decay = 0.5f;   // Fattore di riduzione di epsilon
+
+	float epsilon_min = 1e-6f;    // Valore minimo di epsilon per evitare valori troppo piccoli
+
 
 	auto start = std::chrono::system_clock::now();
 
@@ -247,9 +260,9 @@ void apprendi()
 				err_epoca = err_rete;
 			}
 		}
-		if (err_epoca_min_value > err_epoca) { err_epoca_min_value = err_epoca; }
-		else {
-			
+		if (err_epoca_min_value > err_epoca) {
+
+			err_epoca_min_value = err_epoca;
 		}
 
 		epoca++;
@@ -257,23 +270,57 @@ void apprendi()
 		cout_counter++;
 
 		//cout << "stop when err_epoca < " << _err_amm << "\n\n";
-		if (cout_counter == 10000) {
+		if (cout_counter == 10000)
+		{
 			std::cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << " min. errore_epoca= " << err_epoca_min_value << "\n";
 			cout_counter = 0;
-			
-			std::cout << "Vuoi cambiare la variabile Epsilon? (S per si, Y per no): ";
-			char risposta = _getch();  // Legge il carattere premuto
-			std::cout << risposta << std::endl;  // Mostra il carattere inseriton
 
-			if (risposta == 'S' || risposta == 's') {
-				std::cout << "Inserisci il nuovo valore per Epsilon: ";
-				std::cin >> epsilon;
-				std::cout << "La nuova variabile Epsilon è stata impostata a: " << epsilon << std::endl;
-			}
-			else {
-				std::cout << "La variabile Epsilon non è stata modificata. Il valore attuale è: " << epsilon << std::endl;
-			}
+			//if ((err_epoca >= err_epoca_first) && err_epoca_first > 0.00f)
+			//{
+			//	//epsilon = max(epsilon * epsilon_decay, epsilon_min);
+			//	if ((epsilon - 0.05f) >= 0.10f)
+			//	{
+			//		epsilon = epsilon - 0.05f;
+			//	}
+			//	else
+			//	{
+			//		epsilon = 0.90f;
+			//	}
+
+			//	std::cout << "Epsilon ridotto a: " << epsilon << "\n";
+			//}
+			//else {
+			//	if ((epsilon + 0.05f) <= 0.99f)
+			//	{
+			//		epsilon = epsilon + 0.05f;
+			//	}
+			//	else
+			//	{
+			//		epsilon = 0.10f;
+			//	}
+
+			//	std::cout << "Epsilon aumentato a: " << epsilon << "\n";
+			//}
+
+			//err_epoca_first = err_epoca;
+
+			//std::cout << "Vuoi cambiare la variabile Epsilon? (S per si, Y per no): ";
+			//char risposta = _getch();  // Legge il carattere premuto
+			//std::cout << risposta << std::endl;  // Mostra il carattere inseriton
+
+			//if (risposta == 'S' || risposta == 's') {
+			//	std::cout << "Inserisci il nuovo valore per Epsilon: ";
+			//	std::cin >> epsilon;
+			//	std::cout << "La nuova variabile Epsilon è stata impostata a: " << epsilon << std::endl;
+			//}
+			//else {
+			//	std::cout << "La variabile Epsilon non è stata modificata. Il valore attuale è: " << epsilon << std::endl;
+			//}
 		}
+
+
+
+
 	} while (err_epoca > _err_amm);
 
 	write_weights_on_file();
@@ -604,4 +651,17 @@ void write_weights_on_file()
 float TLR(float x)
 {
 	return x > 0 ? x : 0.01f * x; // Leaky ReLU
+}
+
+void initilize_gnuplot() {
+
+	gnuplotPipe = popen("gnuplot -persistent", "w");
+
+	if (gnuplotPipe == NULL)
+	{
+		printf("Errore nell'apertura di Gnuplot.\n");
+		return;
+	}
+
+	fprintf(gnuplotPipe, "plot '-' with lines, '-' with points pointtype 7\n");
 }
