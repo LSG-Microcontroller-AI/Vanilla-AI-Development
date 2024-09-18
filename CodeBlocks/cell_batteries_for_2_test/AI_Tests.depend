@@ -38,3 +38,19 @@
 	<string>
 	<fstream>
 
+1726668545 source:c:\repos\lsg-microcontroller-ai\cell_batteries_check_ai\codeblocks\cell_batteries_for_2_test\main.cpp
+	<iostream>
+	<cmath>
+	<stdlib.h>
+	<stdint.h>
+	<sstream>
+	<random>
+	<ctime>
+	<unistd.h>
+	<conio.h>
+	<windows.h>
+	<chrono>
+	<ctime>
+	<string>
+	<fstream>
+

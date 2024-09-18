@@ -40,10 +40,6 @@ void write_weights_on_file();
 
 void read_samples_from_file_diagram_battery();
 
-void initilize_gnuplot();
-
-void plot_point(double x,double y);
-
 float T(float A);
 
 float TLR(float A);
@@ -52,9 +48,9 @@ float err_rete = 0.00f;
 
 //float _err_amm = 0.00315f;
 
-float _err_amm = 0.0030f;
+float _err_amm = 0.00313f;
 
-float epsilon = 0.40f;
+float epsilon = 0.19f;
 
 const uint8_t numberOf_X = 2 + 1;
 
@@ -88,8 +84,6 @@ float battery_out_training[training_samples]{};
 
 default_random_engine generator(time(0));
 
-FILE* gnuplotPipe;
-
 int main()
 {
 
@@ -109,8 +103,6 @@ int main()
 #else
 
 #endif
-
-	initilize_gnuplot();
 
 	init();
 
@@ -194,13 +186,15 @@ double xavier_init(double n_x, double n_y)
 
 void lavora()
 {
-	x[0] = 2.00f / 100.00f;
+	x[0] = 3.00f / 100.00f;
 
-	x[1] = 93.00f / 100.00f;
+	x[1] = 60.00f / 100.00f;
 
 	esegui();
 
 	cout << "\n x[0]=" << x[0] * 100.00f << " x[1]=" << x[1] * 100.00f << " y[0]=" << y[0] * 100.00f << "\n";
+
+	return;
 
 	x[0] = 0.50f / 100.00f;
 
@@ -233,7 +227,6 @@ void apprendi()
 
 	float epsilon_min = 1e-6f;    // Valore minimo di epsilon per evitare valori troppo piccoli
 
-
 	auto start = std::chrono::system_clock::now();
 
 	read_samples_from_file_diagram_battery();
@@ -262,6 +255,8 @@ void apprendi()
 				err_epoca = err_rete;
 			}
 		}
+
+
 		if (err_epoca_min_value > err_epoca) {
 
 			err_epoca_min_value = err_epoca;
@@ -482,9 +477,9 @@ void back_propagate()
 			err_rete = abs(d[j] - y[j]);
 		}
 
-		plot_point(W2[0][0],err_rete);
-
 		delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
+
+		//float gradi = atan(delta) * (180.0f / M_PI);
 
 		for (int k = 0; k < numberOf_H - 1; k++)
 		{
@@ -666,21 +661,4 @@ void write_weights_on_file()
 float TLR(float x)
 {
 	return x > 0 ? x : 0.01f * x; // Leaky ReLU
-}
-
-void initilize_gnuplot() {
-
-	gnuplotPipe = popen("gnuplot -persistent", "w");
-
-	if (gnuplotPipe == NULL)
-	{
-		printf("Errore nell'apertura di Gnuplot.\n");
-		return;
-	}
-
-	fprintf(gnuplotPipe, "plot '-' with lines, '-' with points pointtype 7\n");
-}
-
-void plot_point(double x,double y){
-    fprintf(gnuplotPipe, "%lf %lf\n", x, y);
 }

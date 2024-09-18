@@ -13,6 +13,7 @@ using namespace std;
 #ifdef __linux__
 
 #elif _WIN32
+#include <unistd.h>
 #include <conio.h>
 #include <windows.h>
 #else
@@ -29,6 +30,11 @@ void init();
 void lavora();
 
 double get_random_number_from_xavier();
+
+void initilize_gnuplot();
+
+void plot_point(double x,double y);
+
 
 void esegui();
 
@@ -52,11 +58,11 @@ float err_rete = 0.00f;
 
 float _err_amm = 0.0032f;
 
-float epsilon = 0.9f;
+float epsilon = 0.5f;
 
 const uint8_t numberOf_X = 2 + 1;
 
-const uint16_t numberOf_H = 20 + 1;
+const uint16_t numberOf_H = 5 + 1;
 
 const uint8_t numberOf_Y = 1;
 
@@ -85,6 +91,8 @@ float dischage_percentage_training[training_samples]{};
 float battery_out_training[training_samples]{};
 
 default_random_engine generator(time(0));
+
+FILE* gnuplotPipe;
 
 int main()
 {
@@ -223,7 +231,9 @@ void apprendi()
 
 	read_samples_from_file_diagram_battery();
 
-	float err_epoca_min_value = FLT_MAX;
+	float err_epoca_min_value = 10000;
+
+    initilize_gnuplot();
 
 	do
 	{
@@ -245,8 +255,20 @@ void apprendi()
 			{
 				//cout << "ciclo: " << p << "  errore_rete= " << err_rete << "\n";
 				err_epoca = err_rete;
+
 			}
+			plot_point(W1[0][0], err_rete);
+
+			cout << "\n x = " << W1[0][0] << "y= " << err_rete << "\n";
 		}
+
+		cout << "\n epoca : " << epoca << "\n";
+
+		_pclose(gnuplotPipe);
+
+		sleep(10);
+
+
 		if (err_epoca_min_value > err_epoca) { err_epoca_min_value = err_epoca; }
 		else {
 
@@ -261,18 +283,18 @@ void apprendi()
 			std::cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << " min. errore_epoca= " << err_epoca_min_value << "\n";
 			cout_counter = 0;
 
-			std::cout << "Vuoi cambiare la variabile Epsilon? (S per si, Y per no): ";
-			char risposta = _getch();  // Legge il carattere premuto
-			std::cout << risposta << std::endl;  // Mostra il carattere inseriton
-
-			if (risposta == 'S' || risposta == 's') {
-				std::cout << "Inserisci il nuovo valore per Epsilon: ";
-				std::cin >> epsilon;
-				std::cout << "La nuova variabile Epsilon è stata impostata a: " << epsilon << std::endl;
-			}
-			else {
-				std::cout << "La variabile Epsilon non è stata modificata. Il valore attuale è: " << epsilon << std::endl;
-			}
+//			std::cout << "Vuoi cambiare la variabile Epsilon? (S per si, Y per no): ";
+//			char risposta = _getch();  // Legge il carattere premuto
+//			std::cout << risposta << std::endl;  // Mostra il carattere inseriton
+//
+//			if (risposta == 'S' || risposta == 's') {
+//				std::cout << "Inserisci il nuovo valore per Epsilon: ";
+//				std::cin >> epsilon;
+//				std::cout << "La nuova variabile Epsilon è stata impostata a: " << epsilon << std::endl;
+//			}
+//			else {
+//				std::cout << "La variabile Epsilon non è stata modificata. Il valore attuale è: " << epsilon << std::endl;
+//			}
 		}
 	} while (err_epoca > _err_amm);
 
@@ -604,4 +626,21 @@ void write_weights_on_file()
 float TLR(float x)
 {
 	return x > 0 ? x : 0.01f * x; // Leaky ReLU
+}
+
+void initilize_gnuplot() {
+
+	gnuplotPipe = _popen("gnuplot -persistent", "w");
+
+	if (gnuplotPipe == NULL)
+	{
+		printf("Errore nell'apertura di Gnuplot.\n");
+		return;
+	}
+
+	fprintf(gnuplotPipe, "plot '-' with lines, '-' with points pointtype 7\n");
+}
+
+void plot_point(double x,double y){
+    fprintf(gnuplotPipe, "%lf %lf\n", x, y);
 }
