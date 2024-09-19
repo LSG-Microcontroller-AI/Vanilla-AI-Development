@@ -33,12 +33,15 @@ double get_random_number_from_xavier();
 
 void initilize_gnuplot();
 
-void plot_point(double x,double y);
+void plot_point(FILE* gnuplotPipe,double x,double y);
 
+void close_plotpipe(FILE* gnuplotPipe);
 
 void esegui();
 
 void apprendi();
+
+FILE* open_gnuplot_pipe(const char* title);
 
 void back_propagate();
 
@@ -56,9 +59,9 @@ float err_epoca = 0.00f;
 
 float err_rete = 0.00f;
 
-float _err_amm = 0.0032f;
+float _err_amm = 0.0050f;
 
-float epsilon = 0.5f;
+float epsilon = 0.01f;
 
 const uint8_t numberOf_X = 2 + 1;
 
@@ -92,7 +95,9 @@ float battery_out_training[training_samples]{};
 
 default_random_engine generator(time(0));
 
-FILE* gnuplotPipe;
+//FILE* gnuplotPipe1;
+//
+//FILE* gnuplotPipe2;
 
 int main()
 {
@@ -233,11 +238,20 @@ void apprendi()
 
 	float err_epoca_min_value = 10000;
 
-    initilize_gnuplot();
+	FILE* gnuplotPipe1 = open_gnuplot_pipe("W00") ;
+
+	FILE* gnuplotPipe2 = open_gnuplot_pipe("W01") ;
+
+	FILE* gnuplotPipe3 = open_gnuplot_pipe("W02") ;
+
+	FILE* gnuplotPipe4 = open_gnuplot_pipe("W03") ;
+
 
 	do
 	{
 		err_epoca = 0.00f;
+
+
 
 		for (unsigned long p = 0; p < training_samples; p++)
 		{
@@ -257,16 +271,53 @@ void apprendi()
 				err_epoca = err_rete;
 
 			}
-			plot_point(W1[0][0], err_rete);
 
-			cout << "\n x = " << W1[0][0] << "y= " << err_rete << "\n";
+			if(epoca == 0)
+{
+
+
+			plot_point(gnuplotPipe1,W1[0][0], err_rete);
+
+			plot_point(gnuplotPipe2,W1[0][1], err_rete);
+
+			plot_point(gnuplotPipe3,W1[0][2], err_rete);
+//
+//            plot_point(gnuplotPipe3,W1[0][2], err_rete);
+//
+		    plot_point(gnuplotPipe4,W1[0][3], err_rete);
+}
+
+			//cout << "\n x(peso) = " << W1[0][0] << "\t y(errore) = " << err_rete << "\t cicle = " << p << "\n";
+//			cout << "\n x = " << W1[0][1] << "y= " << err_rete << "\n";
+//			cout << "\n x = " << W1[0][2] << "y= " << err_rete << "\n";
+//			cout << "\n x = " << W1[0][3] << "y= " << err_rete << "\n";
 		}
 
-		cout << "\n epoca : " << epoca << "\n";
+		//cout << "\n epoca : " << epoca << "\n";
+	if(epoca == 0)
+{
+		close_plotpipe(gnuplotPipe1);
 
-		_pclose(gnuplotPipe);
+		//sleep(5);
 
-		sleep(10);
+		close_plotpipe(gnuplotPipe2);
+
+			//sleep(5);
+
+
+
+       close_plotpipe(gnuplotPipe3);
+//
+//
+//
+//        close_plotpipe(gnuplotPipe3);
+//
+//
+//
+       close_plotpipe(gnuplotPipe4);
+
+}
+
 
 
 		if (err_epoca_min_value > err_epoca) { err_epoca_min_value = err_epoca; }
@@ -628,19 +679,38 @@ float TLR(float x)
 	return x > 0 ? x : 0.01f * x; // Leaky ReLU
 }
 
-void initilize_gnuplot() {
+//void initilize_gnuplot() {
+//
+//	gnuplotPipe1 = _popen("gnuplot -persistent", "w");
+//
+//	if (gnuplotPipe1 == NULL)
+//	{
+//		printf("Errore nell'apertura di Gnuplot.\n");
+//		return;
+//	}
+//
+//	fprintf(gnuplotPipe1, "plot '-' with lines, '-' with points pointtype 7\n");
+//}
 
-	gnuplotPipe = _popen("gnuplot -persistent", "w");
-
-	if (gnuplotPipe == NULL)
-	{
-		printf("Errore nell'apertura di Gnuplot.\n");
-		return;
-	}
-
-	fprintf(gnuplotPipe, "plot '-' with lines, '-' with points pointtype 7\n");
-}
-
-void plot_point(double x,double y){
+void plot_point(FILE* gnuplotPipe,double x,double y){
     fprintf(gnuplotPipe, "%lf %lf\n", x, y);
+    fflush(gnuplotPipe);
 }
+
+void close_plotpipe(FILE* gnuplotPipe){
+     fflush(gnuplotPipe);
+      _pclose(gnuplotPipe);
+}
+
+FILE* open_gnuplot_pipe(const char* title) {
+
+    FILE* pipe = _popen("gnuplot -persistent", "w");
+
+    if (pipe == NULL) {
+        std::cerr << "Errore: impossibile aprire Gnuplot." << std::endl;
+        exit(1);
+    }
+    fprintf(pipe, "plot '-' with lines title '%s' , '-' with points pointtype 7 title '%s'\n",title, title);
+    return pipe;
+}
+
