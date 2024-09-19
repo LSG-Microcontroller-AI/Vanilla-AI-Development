@@ -59,9 +59,9 @@ float err_epoca = 0.00f;
 
 float err_rete = 0.00f;
 
-float _err_amm = 0.0050f;
+float _err_amm = 0.0021f;
 
-float epsilon = 0.01f;
+float epsilon = 0.75f;
 
 const uint8_t numberOf_X = 2 + 1;
 
@@ -94,10 +94,6 @@ float dischage_percentage_training[training_samples]{};
 float battery_out_training[training_samples]{};
 
 default_random_engine generator(time(0));
-
-//FILE* gnuplotPipe1;
-//
-//FILE* gnuplotPipe2;
 
 int main()
 {
@@ -678,19 +674,6 @@ float TLR(float x)
 {
 	return x > 0 ? x : 0.01f * x; // Leaky ReLU
 }
-
-//void initilize_gnuplot() {
-//
-//	gnuplotPipe1 = _popen("gnuplot -persistent", "w");
-//
-//	if (gnuplotPipe1 == NULL)
-//	{
-//		printf("Errore nell'apertura di Gnuplot.\n");
-//		return;
-//	}
-//
-//	fprintf(gnuplotPipe1, "plot '-' with lines, '-' with points pointtype 7\n");
-//}
 
 void plot_point(FILE* gnuplotPipe,double x,double y){
     fprintf(gnuplotPipe, "%lf %lf\n", x, y);
