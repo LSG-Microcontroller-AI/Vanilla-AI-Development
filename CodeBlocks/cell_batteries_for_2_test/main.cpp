@@ -6,24 +6,21 @@ using namespace std;
 #include <stdlib.h>
 #include <stdint.h>
 #include <sstream>
-
-#include <random> // Per generazione numeri casuali
-#include <ctime>  // Per il seme random
+#include <chrono>
+#include <ctime>
+#include <string>
+#include <fstream>
+#include <cfloat>
+#include <random> 
 
 #ifdef __linux__
 
 #elif _WIN32
-#include <unistd.h>
 #include <conio.h>
 #include <windows.h>
 #else
 
 #endif
-
-#include <chrono>
-#include <ctime>
-#include <string>
-#include <fstream>
 
 void init();
 
@@ -31,17 +28,9 @@ void lavora();
 
 double get_random_number_from_xavier();
 
-void initilize_gnuplot();
-
-void plot_point(FILE* gnuplotPipe,double x,double y);
-
-void close_plotpipe(FILE* gnuplotPipe);
-
 void esegui();
 
 void apprendi();
-
-FILE* open_gnuplot_pipe(const char* title);
 
 void back_propagate();
 
@@ -55,13 +44,13 @@ float T(float A);
 
 float TLR(float A);
 
-float err_epoca = 0.00f;
-
 float err_rete = 0.00f;
 
-float _err_amm = 0.0021f;
+//float _err_amm = 0.00315f;
 
-float epsilon = 0.75f;
+float _err_amm = 0.00313f;
+
+float epsilon = 0.19f;
 
 const uint8_t numberOf_X = 2 + 1;
 
@@ -197,13 +186,15 @@ double xavier_init(double n_x, double n_y)
 
 void lavora()
 {
-	x[0] = 0.20f / 100.00f;
+	x[0] = 3.00f / 100.00f;
 
-	x[1] = 30.00f / 100.00f;
+	x[1] = 60.00f / 100.00f;
 
 	esegui();
 
 	cout << "\n x[0]=" << x[0] * 100.00f << " x[1]=" << x[1] * 100.00f << " y[0]=" << y[0] * 100.00f << "\n";
+
+	return;
 
 	x[0] = 0.50f / 100.00f;
 
@@ -226,28 +217,25 @@ void apprendi()
 {
 	int epoca = 0;
 
+	float err_epoca_first = 0.00f;
+
+	float err_epoca;
+
 	int cout_counter = 0;
+
+	float epsilon_decay = 0.5f;   // Fattore di riduzione di epsilon
+
+	float epsilon_min = 1e-6f;    // Valore minimo di epsilon per evitare valori troppo piccoli
 
 	auto start = std::chrono::system_clock::now();
 
 	read_samples_from_file_diagram_battery();
 
-	float err_epoca_min_value = 10000;
-
-	FILE* gnuplotPipe1 = open_gnuplot_pipe("W00") ;
-
-	FILE* gnuplotPipe2 = open_gnuplot_pipe("W01") ;
-
-	FILE* gnuplotPipe3 = open_gnuplot_pipe("W02") ;
-
-	FILE* gnuplotPipe4 = open_gnuplot_pipe("W03") ;
-
+	float err_epoca_min_value = FLT_MAX;
 
 	do
 	{
 		err_epoca = 0.00f;
-
-
 
 		for (unsigned long p = 0; p < training_samples; p++)
 		{
@@ -265,60 +253,13 @@ void apprendi()
 			{
 				//cout << "ciclo: " << p << "  errore_rete= " << err_rete << "\n";
 				err_epoca = err_rete;
-
 			}
-
-			if(epoca == 0)
-{
-
-
-			plot_point(gnuplotPipe1,W1[0][0], err_rete);
-
-			plot_point(gnuplotPipe2,W1[0][1], err_rete);
-
-			plot_point(gnuplotPipe3,W1[0][2], err_rete);
-//
-//            plot_point(gnuplotPipe3,W1[0][2], err_rete);
-//
-		    plot_point(gnuplotPipe4,W1[0][3], err_rete);
-}
-
-			//cout << "\n x(peso) = " << W1[0][0] << "\t y(errore) = " << err_rete << "\t cicle = " << p << "\n";
-//			cout << "\n x = " << W1[0][1] << "y= " << err_rete << "\n";
-//			cout << "\n x = " << W1[0][2] << "y= " << err_rete << "\n";
-//			cout << "\n x = " << W1[0][3] << "y= " << err_rete << "\n";
 		}
 
-		//cout << "\n epoca : " << epoca << "\n";
-	if(epoca == 0)
-{
-		close_plotpipe(gnuplotPipe1);
 
-		//sleep(5);
+		if (err_epoca_min_value > err_epoca) {
 
-		close_plotpipe(gnuplotPipe2);
-
-			//sleep(5);
-
-
-
-       close_plotpipe(gnuplotPipe3);
-//
-//
-//
-//        close_plotpipe(gnuplotPipe3);
-//
-//
-//
-       close_plotpipe(gnuplotPipe4);
-
-}
-
-
-
-		if (err_epoca_min_value > err_epoca) { err_epoca_min_value = err_epoca; }
-		else {
-
+			err_epoca_min_value = err_epoca;
 		}
 
 		epoca++;
@@ -326,23 +267,58 @@ void apprendi()
 		cout_counter++;
 
 		//cout << "stop when err_epoca < " << _err_amm << "\n\n";
-		if (cout_counter == 10000) {
+		if (cout_counter == 10000)
+		{
 			std::cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << " min. errore_epoca= " << err_epoca_min_value << "\n";
+			
 			cout_counter = 0;
 
-//			std::cout << "Vuoi cambiare la variabile Epsilon? (S per si, Y per no): ";
-//			char risposta = _getch();  // Legge il carattere premuto
-//			std::cout << risposta << std::endl;  // Mostra il carattere inseriton
-//
-//			if (risposta == 'S' || risposta == 's') {
-//				std::cout << "Inserisci il nuovo valore per Epsilon: ";
-//				std::cin >> epsilon;
-//				std::cout << "La nuova variabile Epsilon è stata impostata a: " << epsilon << std::endl;
-//			}
-//			else {
-//				std::cout << "La variabile Epsilon non è stata modificata. Il valore attuale è: " << epsilon << std::endl;
-//			}
+			//if ((err_epoca >= err_epoca_first) && err_epoca_first > 0.00f)
+			//{
+			//	//epsilon = max(epsilon * epsilon_decay, epsilon_min);
+			//	if ((epsilon - 0.05f) >= 0.10f)
+			//	{
+			//		epsilon = epsilon - 0.05f;
+			//	}
+			//	else
+			//	{
+			//		epsilon = 0.90f;
+			//	}
+
+			//	std::cout << "Epsilon ridotto a: " << epsilon << "\n";
+			//}
+			//else {
+			//	if ((epsilon + 0.05f) <= 0.99f)
+			//	{
+			//		epsilon = epsilon + 0.05f;
+			//	}
+			//	else
+			//	{
+			//		epsilon = 0.10f;
+			//	}
+
+			//	std::cout << "Epsilon aumentato a: " << epsilon << "\n";
+			//}
+
+			//err_epoca_first = err_epoca;
+
+			//std::cout << "Vuoi cambiare la variabile Epsilon? (S per si, Y per no): ";
+			//char risposta = _getch();  // Legge il carattere premuto
+			//std::cout << risposta << std::endl;  // Mostra il carattere inseriton
+
+			//if (risposta == 'S' || risposta == 's') {
+			//	std::cout << "Inserisci il nuovo valore per Epsilon: ";
+			//	std::cin >> epsilon;
+			//	std::cout << "La nuova variabile Epsilon è stata impostata a: " << epsilon << std::endl;
+			//}
+			//else {
+			//	std::cout << "La variabile Epsilon non è stata modificata. Il valore attuale è: " << epsilon << std::endl;
+			//}
 		}
+
+
+
+
 	} while (err_epoca > _err_amm);
 
 	write_weights_on_file();
@@ -459,7 +435,7 @@ void esegui()
 			A = A + (W1[i][k] * x[i]);
 		}
 
-		//insert X bias
+		//insert X bias 
 		A = A + x[numberOf_X - 1];
 
 		h[k] = T(A);
@@ -474,7 +450,7 @@ void esegui()
 			A = A + (W2[k][j] * h[k]);
 		}
 
-		//insert H bias
+		//insert H bias 
 		A = A + h[numberOf_H - 1];
 
 		y[j] = T(A);
@@ -503,12 +479,16 @@ void back_propagate()
 
 		delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
 
+		//float gradi = atan(delta) * (180.0f / M_PI);
+
 		for (int k = 0; k < numberOf_H - 1; k++)
 		{
 			err_H[k] = err_H[k] + (delta * W2[k][j]);
 
 			W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
 		}
+
+		
 
 		// Aggiornamento del bias del livello di uscita
 		h[numberOf_H - 1] += epsilon * delta;
@@ -586,7 +566,15 @@ void read_samples_from_file_diagram_battery()
 	}
 	cout << "number of training sample = \t" << index << "\n\n";
 
-	system("pause");
+
+#ifdef __linux__
+
+#elif _WIN32
+system("pause");
+#else
+
+#endif
+	
 
 	if (index != training_samples)
 	{
@@ -674,26 +662,3 @@ float TLR(float x)
 {
 	return x > 0 ? x : 0.01f * x; // Leaky ReLU
 }
-
-void plot_point(FILE* gnuplotPipe,double x,double y){
-    fprintf(gnuplotPipe, "%lf %lf\n", x, y);
-    fflush(gnuplotPipe);
-}
-
-void close_plotpipe(FILE* gnuplotPipe){
-     fflush(gnuplotPipe);
-      _pclose(gnuplotPipe);
-}
-
-FILE* open_gnuplot_pipe(const char* title) {
-
-    FILE* pipe = _popen("gnuplot -persistent", "w");
-
-    if (pipe == NULL) {
-        std::cerr << "Errore: impossibile aprire Gnuplot." << std::endl;
-        exit(1);
-    }
-    fprintf(pipe, "plot '-' with lines title '%s' , '-' with points pointtype 7 title '%s'\n",title, title);
-    return pipe;
-}
-
