@@ -52,11 +52,15 @@ float _err_amm = 0.00313f;
 
 float epsilon = 0.19f;
 
-const uint8_t numberOf_X = 2 + 1;
+const uint8_t numberOf_X = 2;
 
-const uint16_t numberOf_H = 5 + 1;
+const uint8_t numberOf_H = 5;
 
 const uint8_t numberOf_Y = 1;
+
+float output_bias[numberOf_Y] = {0.00};
+
+float hidden_bias[numberOf_H] = { 0.00};
 
 uint16_t const training_samples = 490;
 
@@ -64,17 +68,17 @@ double _lower_bound_xavier;
 
 double _upper_bound_xavier;
 
-float W1[numberOf_X - 1][numberOf_H - 1] = { 0 };
+float W1[numberOf_X][numberOf_H] = { 0.00 };
 
-float W2[numberOf_H - 1][numberOf_Y] = { 0 };
+float W2[numberOf_H][numberOf_Y] = { 0.00 };
 
-float x[numberOf_X] = { 0 };
+float x[numberOf_X] = { 0.00 };
 
-float y[numberOf_Y] = { 0 };
+float h[numberOf_H] = { 0.00 };
 
-float h[numberOf_H] = { 0 };
-
-float d[numberOf_Y] = { 0 };
+float y[numberOf_Y] = { 0.00 };
+	
+float d[numberOf_Y] = { 0.00 };
 
 float c_factor_training[training_samples]{};
 
@@ -182,6 +186,90 @@ int main()
 double xavier_init(double n_x, double n_y)
 {
 	return sqrt(6.0) / sqrt(n_x + n_y);
+}
+
+void init()
+{
+	double param = xavier_init(numberOf_X, numberOf_Y);
+
+	cout << "xavier glorot param : " << param << "\n\n";
+
+	_lower_bound_xavier = -param;
+
+	_upper_bound_xavier = param;
+
+	//-----------------------------------	bias initialization
+
+	for (int i = 0; i < numberOf_Y; i++) {
+		output_bias[i] = 0.1f;
+	}
+
+	for (int i = 0; i < numberOf_H; i++) {
+		hidden_bias[i] = 0.1f;
+	}
+
+	//-----------------------------------	console input values + Hidden bias values
+
+	//cout << "input elements initialization:\n\n";
+
+	for (int i = 0; i < (numberOf_X); i++)
+	{
+		//x[i] = 0.00f;
+		cout << "x[" << i << "]" << "=" << x[i] << "\n";
+	}
+
+	for (int i = 0; i < numberOf_H; i++) {
+		cout << "hidden_bias[" << i << "]" << "=" << hidden_bias[i] << "-BIAS" << "\n";
+	}
+
+	
+	//-----------------------------------	console hidden values + output bias values
+
+	for (int i = 0; i < (numberOf_H); i++)
+	{
+		//h[i] = 0.00f;
+		cout << "h[" << i << "]" << "=" << h[i] << "\n";
+	}
+
+	for (int i = 0; i < numberOf_Y; i++) {
+		cout << "output_bias[" << i << "]" << "=" << output_bias[i] << "-BIAS" << "\n";
+	}
+
+	//cout << "output elements initialization:\n\n";
+
+	//-----------------------------------	console output values
+
+	for (int i = 0; i < numberOf_Y; i++)
+	{
+		//y[i] = 0.00f;
+		cout << "y[" << i << "]=" << y[i] << "\n";
+	}
+
+	//-----------------------------------	console W1 values
+
+	cout << "W1 elements initialization:\n\n";
+
+	for (int i = 0; i < numberOf_X; i++)
+	{
+		for (int k = 0; k < numberOf_H; k++)
+		{
+			W1[i][k] = get_random_number_from_xavier();
+
+			cout << "W1[" << i << "]" << "[" << k << "]" << "=" << W1[i][k] << "\n";
+		}
+	}
+
+	//-----------------------------------	console W2 values
+
+	for (int k = 0; k < numberOf_H; k++)
+	{
+		for (int j = 0; j < numberOf_Y; j++)
+		{
+			W2[k][j] = get_random_number_from_xavier();
+
+			cout << "W2[" << k << "]" << "[" << j << "]" << "=" << W2[k][j] << "\n";
+		}
+	}
 }
 
 void lavora()
@@ -353,74 +441,7 @@ void apprendi()
 #endif
 }
 
-void init()
-{
-	double param = xavier_init(numberOf_X - 1, numberOf_Y);
 
-	cout << "xavier glorot param : " << param << "\n\n";
-
-	_lower_bound_xavier = -param;
-
-	_upper_bound_xavier = param;
-
-	// Set Bias
-	x[numberOf_X - 1] = 0.20f;
-
-	h[numberOf_H - 1] = 0.20f;
-
-	cout << "input elements initialization:\n\n";
-
-	for (int i = 0; i < (numberOf_X - 1); i++)
-	{
-		x[i] = 0.00f;
-
-		cout << "x[" << i << "]" << "=" << x[i] << "\n";
-	}
-
-	cout << "x[" << (int)(numberOf_X - 1) << "]" << "=" << x[numberOf_X - 1] << "-BIAS" << "\n";
-
-	cout << "hidden elements initialization:\n\n";
-
-	for (int i = 0; i < (numberOf_H - 1); i++)
-	{
-		h[i] = 0.00f;
-
-		cout << "h[" << i << "]" << "=" << h[i] << "\n";
-	}
-
-	cout << "h[" << (int)(numberOf_H - 1) << "]" << "=" << h[numberOf_H - 1] << "-BIAS" << "\n";
-
-	cout << "output elements initialization:\n\n";
-
-	for (int i = 0; i < numberOf_Y; i++)
-	{
-		y[i] = 0.00f;
-
-		cout << "y[" << i << "]=" << y[i] << "\n";
-	}
-
-	cout << "W1 elements initialization:\n\n";
-
-	for (int i = 0; i < numberOf_X - 1; i++)
-	{
-		for (int k = 0; k < numberOf_H - 1; k++)
-		{
-			W1[i][k] = get_random_number_from_xavier();
-
-			cout << "W1[" << i << "]" << "[" << k << "]" << "=" << W1[i][k] << "\n";
-		}
-	}
-
-	for (int k = 0; k < numberOf_H - 1; k++)
-	{
-		for (int j = 0; j < numberOf_Y; j++)
-		{
-			W2[k][j] = get_random_number_from_xavier();
-
-			cout << "W2[" << k << "]" << "[" << j << "]" << "=" << W2[k][j] << "\n";
-		}
-	}
-}
 
 void esegui()
 {
@@ -623,9 +644,9 @@ void write_weights_on_file()
 
 		if (fw.good())
 		{
-			for (int i = 0; i < numberOf_X - 1; i++)
+			for (int i = 0; i < numberOf_X; i++)
 			{
-				for (int k = 0; k < numberOf_H - 1; k++)
+				for (int k = 0; k < numberOf_H; k++)
 				{
 					fw.write((char*)&W1[i][k], sizeof(float));
 				}
@@ -633,11 +654,13 @@ void write_weights_on_file()
 
 			for (int j = 0; j < numberOf_Y; j++)
 			{
-				for (int k = 0; k < numberOf_H - 1; k++)
+				for (int k = 0; k < numberOf_H; k++)
 				{
 					fw.write((char*)&W2[k][j], sizeof(float));
 				}
 			}
+
+
 
 			fw.write((char*)&x[numberOf_X - 1], sizeof(float));
 
