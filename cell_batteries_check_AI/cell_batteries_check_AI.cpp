@@ -305,15 +305,15 @@ void apprendi()
 {
 	int epoca = 0;
 
-	float err_epoca_first = 0.00f;
+	//float err_epoca_first = 0.00f;
 
 	float err_epoca;
 
 	int cout_counter = 0;
 
-	float epsilon_decay = 0.5f;   // Fattore di riduzione di epsilon
+	//float epsilon_decay = 0.5f;   // Fattore di riduzione di epsilon
 
-	float epsilon_min = 1e-6f;    // Valore minimo di epsilon per evitare valori troppo piccoli
+	//float epsilon_min = 1e-6f;    // Valore minimo di epsilon per evitare valori troppo piccoli
 
 	auto start = std::chrono::system_clock::now();
 
@@ -441,23 +441,21 @@ void apprendi()
 #endif
 }
 
-
-
 void esegui()
 {
 	float A;
 
-	for (int k = 0; k < (numberOf_H - 1); k++)
+	for (int k = 0; k < (numberOf_H); k++)
 	{
 		A = 0.00f;
 
-		for (int i = 0; i < numberOf_X - 1; i++)
+		for (int i = 0; i < numberOf_X; i++)
 		{
 			A = A + (W1[i][k] * x[i]);
 		}
 
 		//insert X bias 
-		A = A + x[numberOf_X - 1];
+		A = A + hidden_bias[k];
 
 		h[k] = T(A);
 	}
@@ -466,13 +464,13 @@ void esegui()
 	{
 		A = 0.00f;
 
-		for (int k = 0; k < numberOf_H - 1; k++)
+		for (int k = 0; k < numberOf_H; k++)
 		{
 			A = A + (W2[k][j] * h[k]);
 		}
 
 		//insert H bias 
-		A = A + h[numberOf_H - 1];
+		A = A + output_bias[j];
 
 		y[j] = T(A);
 	}
@@ -480,13 +478,13 @@ void esegui()
 
 void back_propagate()
 {
-	float err_H[numberOf_H - 1];
+	float err_H[numberOf_H];
 
 	float delta = 0.00f;
 
 	err_rete = 0.00f;
 
-	for (int k = 0; k < numberOf_H - 1; k++)
+	for (int k = 0; k < numberOf_H; k++)
 	{
 		err_H[k] = 0.00f;
 	}
@@ -502,17 +500,15 @@ void back_propagate()
 
 		//float gradi = atan(delta) * (180.0f / M_PI);
 
-		for (int k = 0; k < numberOf_H - 1; k++)
+		for (int k = 0; k < numberOf_H; k++)
 		{
 			err_H[k] = err_H[k] + (delta * W2[k][j]);
 
 			W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
 		}
 
-		
-
 		// Aggiornamento del bias del livello di uscita
-		h[numberOf_H - 1] += epsilon * delta;
+		output_bias[j] += epsilon * delta;
 	}
 	for (int k = 0; k < numberOf_H - 1; k++)
 	{
@@ -523,7 +519,7 @@ void back_propagate()
 			W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
 		}
 
-		x[numberOf_X - 1] += epsilon * delta;
+		hidden_bias[k] += epsilon * delta;
 	}
 }
 
@@ -627,10 +623,20 @@ void read_weights_from_file()
 				in.read((char*)&W2[k][j], sizeof(float));
 			}
 		}
+		
+		for (int k = 0; k < numberOf_H; k++)
+		{
+			in.read((char*)&hidden_bias[k], sizeof(float));
+		}
+		
+		for (int j = 0; j < numberOf_Y; j++)
+		{
+			in.read((char*)&output_bias[j], sizeof(float));
+		}
 
-		in.read((char*)&x[numberOf_X - 1], sizeof(float));
+		//in.read((char*)&x[numberOf_X - 1], sizeof(float));
 
-		in.read((char*)&h[numberOf_H - 1], sizeof(float));
+		//in.read((char*)&h[numberOf_H - 1], sizeof(float));
 	}
 }
 
@@ -659,14 +665,22 @@ void write_weights_on_file()
 					fw.write((char*)&W2[k][j], sizeof(float));
 				}
 			}
+			
+			
+			for (int k = 0; k < numberOf_H; k++)
+			{
+				fw.write((char*)&hidden_bias[k], sizeof(float));
+			}
+			
+			for (int j = 0; j < numberOf_Y; j++)
+			{
+				fw.write((char*)&output_bias[j], sizeof(float));
+			}
+			
 
+			//fw.write((char*)&x[numberOf_X - 1], sizeof(float));
 
-
-			fw.write((char*)&x[numberOf_X - 1], sizeof(float));
-
-			fw.write((char*)&h[numberOf_H - 1], sizeof(float));
-
-
+			//fw.write((char*)&h[numberOf_H - 1], sizeof(float));
 
 			fw.close();
 
