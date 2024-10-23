@@ -48,9 +48,9 @@ float err_rete = 0.00f;
 
 //float _err_amm = 0.00315f;
 
-float _err_amm = 0.00313f;
+float _err_amm = 0.0025f;
 
-float epsilon = 0.19f;
+float epsilon = 0.0003f;
 
 const uint8_t numberOf_X = 2;
 
@@ -274,7 +274,7 @@ void init()
 
 void lavora()
 {
-	x[0] = 3.00f / 100.00f;
+	x[0] = 1.00f / 100.00f;
 
 	x[1] = 60.00f / 100.00f;
 
@@ -402,6 +402,14 @@ void apprendi()
 			//else {
 			//	std::cout << "La variabile Epsilon non è stata modificata. Il valore attuale è: " << epsilon << std::endl;
 			//}
+
+			if (err_epoca == err_epoca_min_value)
+			{
+				cout << "\nwrite on file\n";
+				write_weights_on_file();
+			}
+
+			
 		}
 
 
@@ -409,7 +417,7 @@ void apprendi()
 
 	} while (err_epoca > _err_amm);
 
-	write_weights_on_file();
+	
 
 	auto end = std::chrono::system_clock::now();
 
@@ -510,11 +518,11 @@ void back_propagate()
 		// Aggiornamento del bias del livello di uscita
 		output_bias[j] += epsilon * delta;
 	}
-	for (int k = 0; k < numberOf_H - 1; k++)
+	for (int k = 0; k < numberOf_H; k++)
 	{
 		delta = err_H[k] * h[k] * (1.00f - h[k]);
 
-		for (int i = 0; i < numberOf_X - 1; i++)
+		for (int i = 0; i < numberOf_X; i++)
 		{
 			W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
 		}
@@ -608,9 +616,9 @@ void read_weights_from_file()
 
 	if (in.good())
 	{
-		for (int i = 0; i < numberOf_X - 1; i++)
+		for (int i = 0; i < numberOf_X; i++)
 		{
-			for (int k = 0; k < numberOf_H - 1; k++)
+			for (int k = 0; k < numberOf_H; k++)
 			{
 				in.read((char*)&W1[i][k], sizeof(float));
 			}
@@ -618,7 +626,7 @@ void read_weights_from_file()
 
 		for (int j = 0; j < numberOf_Y; j++)
 		{
-			for (int k = 0; k < numberOf_H - 1; k++)
+			for (int k = 0; k < numberOf_H; k++)
 			{
 				in.read((char*)&W2[k][j], sizeof(float));
 			}
