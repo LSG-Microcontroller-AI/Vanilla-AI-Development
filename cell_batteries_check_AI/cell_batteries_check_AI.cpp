@@ -28,7 +28,7 @@ void lavora();
 
 double get_random_number_from_xavier();
 
-void esegui();
+void forward();
 
 void apprendi();
 
@@ -40,9 +40,7 @@ void write_weights_on_file();
 
 void read_samples_from_file_diagram_battery();
 
-float T(float A);
-
-float TLR(float A);
+float sigmoid_activation(float A);
 
 float err_rete = 0.00f;
 
@@ -278,7 +276,7 @@ void lavora()
 
 	x[1] = 60.00f / 100.00f;
 
-	esegui();
+	forward();
 
 	cout << "\n x[0]=" << x[0] * 100.00f << " x[1]=" << x[1] * 100.00f << " y[0]=" << y[0] * 100.00f << "\n";
 
@@ -288,7 +286,7 @@ void lavora()
 
 	x[1] = 50.00f / 100.00f;
 
-	esegui();
+	forward();
 
 	cout << "\n x[0]=" << x[0] * 100.00f << " x[1]=" << x[1] * 100.00f << " y[0]=" << y[0] * 100.00f << "\n";
 
@@ -296,7 +294,7 @@ void lavora()
 
 	x[1] = 89.00f / 100.00f;
 
-	esegui();
+	forward();
 
 	cout << "\n x[0]=" << x[0] * 100.00f << " x[1]=" << x[1] * 100.00f << " y[0]=" << y[0] * 100.00f << "\n";
 }
@@ -333,7 +331,7 @@ void apprendi()
 
 			d[0] = battery_out_training[p] / 100.00f;
 
-			esegui();
+			forward();
 
 			back_propagate();
 
@@ -449,38 +447,38 @@ void apprendi()
 #endif
 }
 
-void esegui()
+void forward()
 {
-	float A;
+	float Z;
 
 	for (int k = 0; k < (numberOf_H); k++)
 	{
-		A = 0.00f;
+		Z = 0.00f;
 
 		for (int i = 0; i < numberOf_X; i++)
 		{
-			A = A + (W1[i][k] * x[i]);
+			Z = Z + (W1[i][k] * x[i]);
 		}
 
 		//insert X bias 
-		A = A + hidden_bias[k];
+		Z = Z + hidden_bias[k];
 
-		h[k] = T(A);
+		h[k] = sigmoid_activation(Z);
 	}
 
 	for (int j = 0; j < numberOf_Y; j++)
 	{
-		A = 0.00f;
+		Z = 0.00f;
 
 		for (int k = 0; k < numberOf_H; k++)
 		{
-			A = A + (W2[k][j] * h[k]);
+			Z = Z + (W2[k][j] * h[k]);
 		}
 
 		//insert H bias 
-		A = A + output_bias[j];
+		Z = Z + output_bias[j];
 
-		y[j] = T(A);
+		y[j] = sigmoid_activation(Z);
 	}
 }
 
@@ -540,14 +538,14 @@ double get_random_number_from_xavier()
 	return random_value;
 }
 
-float T(float A)
+float sigmoid_activation(float A)
 {
 	return 1.00f / (1.00f + pow(M_E, -A));
 }
 
 void read_samples_from_file_diagram_battery()
 {
-	std::string filename = "parziale.csv";
+	std::string filename = "LIFEPO4_Discharge_Curves.csv";
 
 	// Apertura del file
 	std::ifstream file(filename);
@@ -612,7 +610,7 @@ system("pause");
 
 void read_weights_from_file()
 {
-	std::ifstream in("batManage1.bin", std::ios_base::binary);
+	std::ifstream in("model.bin", std::ios_base::binary);
 
 	if (in.good())
 	{
@@ -654,7 +652,7 @@ void write_weights_on_file()
 	{
 		//cout << "\nWriting to file... \n\n";
 
-		std::ofstream fw("batManage1.bin", std::ios_base::binary);
+		std::ofstream fw("model.bin", std::ios_base::binary);
 
 		if (fw.good())
 		{
@@ -703,7 +701,3 @@ void write_weights_on_file()
 	}
 }
 
-float TLR(float x)
-{
-	return x > 0 ? x : 0.01f * x; // Leaky ReLU
-}

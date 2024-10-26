@@ -21,8 +21,8 @@
     <ClCompile Include="cell_batteries_check_AI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="batManage1.bin" />
-    <None Include="parziale.csv" />
+    <None Include="model.bin" />
+    <None Include="LIFEPO4_Discharge_Curves.csv" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
