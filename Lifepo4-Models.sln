@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cell_batteries_check_AI", "cell_batteries_check_AI\cell_batteries_check_AI.vcxproj", "{FD06033E-A964-463D-A065-B08746662F03}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lifepo4-Discharge-Model", "Lifepo4-Discharge-Model\Lifepo4-Discharge-Model.vcxproj", "{FD06033E-A964-463D-A065-B08746662F03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

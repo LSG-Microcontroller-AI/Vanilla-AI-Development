@@ -18,7 +18,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cell_batteries_check_AI.cpp" />
+    <ClCompile Include="Lifepo4-Discharge-Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="model.bin" />
