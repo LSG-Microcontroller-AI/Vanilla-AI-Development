@@ -504,8 +504,6 @@ void back_propagate()
 
 		delta = (d[j] - y[j]) * y[j] * (1.00f - y[j]);
 
-		//float gradi = atan(delta) * (180.0f / M_PI);
-
 		for (int k = 0; k < numberOf_H; k++)
 		{
 			err_H[k] = err_H[k] + (delta * W2[k][j]);
