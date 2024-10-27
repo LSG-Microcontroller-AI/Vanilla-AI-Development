@@ -538,9 +538,9 @@ double get_random_number_from_xavier()
 	return random_value;
 }
 
-float sigmoid_activation(float A)
+float sigmoid_activation(float Z)
 {
-	return 1.00f / (1.00f + pow(M_E, -A));
+	return 1.00f / (1.00f + pow(M_E, -Z));
 }
 
 void read_samples_from_file_diagram_battery()
