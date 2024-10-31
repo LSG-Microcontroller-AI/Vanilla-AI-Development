@@ -11,7 +11,7 @@ using namespace std;
 #include <string>
 #include <fstream>
 #include <cfloat>
-#include <random> 
+#include <random>
 
 #ifdef __linux__
 
@@ -75,7 +75,7 @@ float x[numberOf_X] = { 0.00 };
 float h[numberOf_H] = { 0.00 };
 
 float y[numberOf_Y] = { 0.00 };
-	
+
 float d[numberOf_Y] = { 0.00 };
 
 float c_factor_training[training_samples]{};
@@ -220,7 +220,7 @@ void init()
 		cout << "hidden_bias[" << i << "]" << "=" << hidden_bias[i] << "-BIAS" << "\n";
 	}
 
-	
+
 	//-----------------------------------	console hidden values + output bias values
 
 	for (int i = 0; i < (numberOf_H); i++)
@@ -356,7 +356,7 @@ void apprendi()
 		if (cout_counter == 10000)
 		{
 			std::cout << "\nepoca: " << epoca << " errore_epoca= " << err_epoca << " errore_rete=" << err_rete << " min. errore_epoca= " << err_epoca_min_value << "\n";
-			
+
 			cout_counter = 0;
 
 			//if ((err_epoca >= err_epoca_first) && err_epoca_first > 0.00f)
@@ -407,7 +407,7 @@ void apprendi()
 				write_weights_on_file();
 			}
 
-			
+
 		}
 
 
@@ -415,7 +415,7 @@ void apprendi()
 
 	} while (err_epoca > _err_amm);
 
-	
+
 
 	auto end = std::chrono::system_clock::now();
 
@@ -460,7 +460,7 @@ void forward()
 			Z = Z + (W1[i][k] * x[i]);
 		}
 
-		//insert X bias 
+		//insert X bias
 		Z = Z + hidden_bias[k];
 
 		h[k] = sigmoid_activation(Z);
@@ -475,7 +475,7 @@ void forward()
 			Z = Z + (W2[k][j] * h[k]);
 		}
 
-		//insert H bias 
+		//insert H bias
 		Z = Z + output_bias[j];
 
 		y[j] = sigmoid_activation(Z);
@@ -595,7 +595,7 @@ system("pause");
 #else
 
 #endif
-	
+
 
 	if (index != training_samples)
 	{
@@ -627,12 +627,12 @@ void read_weights_from_file()
 				in.read((char*)&W2[k][j], sizeof(float));
 			}
 		}
-		
+
 		for (int k = 0; k < numberOf_H; k++)
 		{
 			in.read((char*)&hidden_bias[k], sizeof(float));
 		}
-		
+
 		for (int j = 0; j < numberOf_Y; j++)
 		{
 			in.read((char*)&output_bias[j], sizeof(float));
@@ -669,18 +669,18 @@ void write_weights_on_file()
 					fw.write((char*)&W2[k][j], sizeof(float));
 				}
 			}
-			
-			
+
+
 			for (int k = 0; k < numberOf_H; k++)
 			{
 				fw.write((char*)&hidden_bias[k], sizeof(float));
 			}
-			
+
 			for (int j = 0; j < numberOf_Y; j++)
 			{
 				fw.write((char*)&output_bias[j], sizeof(float));
 			}
-			
+
 
 			//fw.write((char*)&x[numberOf_X - 1], sizeof(float));
 
