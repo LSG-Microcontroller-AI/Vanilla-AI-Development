@@ -1,0 +1,16 @@
+# depslib dependency file v1.0
+1730363424 source:/home/luigi/Repo/LSG-Microcontroller-AI/Vanilla-AI-Development/Lifepo4-Discharge-Model/Lifepo4-Discharge-Model.cpp
+	<iostream>
+	<cmath>
+	<stdlib.h>
+	<stdint.h>
+	<sstream>
+	<chrono>
+	<ctime>
+	<string>
+	<fstream>
+	<cfloat>
+	<random>
+	<conio.h>
+	<windows.h>
+
