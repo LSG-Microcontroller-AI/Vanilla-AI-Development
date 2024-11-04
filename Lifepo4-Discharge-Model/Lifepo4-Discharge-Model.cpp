@@ -48,7 +48,7 @@ float err_rete = 0.00f;
 
 float _err_amm = 0.0025f;
 
-float epsilon = 0.0003f;
+float epsilon = 0.00009f;
 
 const uint8_t numberOf_X = 2;
 
@@ -272,9 +272,9 @@ void init()
 
 void lavora()
 {
-	x[0] = 1.00f / 100.00f;
+	x[0] = 5.00f / 100.00f;
 
-	x[1] = 60.00f / 100.00f;
+	x[1] = 80.00f / 100.00f;
 
 	forward();
 
@@ -449,51 +449,44 @@ void apprendi()
 
 void forward()
 {
-	float Z;
-
 	for (int k = 0; k < (numberOf_H); k++)
 	{
-		Z = 0.00f;
+		float Zk = 0.00f;
 
 		for (int i = 0; i < numberOf_X; i++)
 		{
-			Z = Z + (W1[i][k] * x[i]);
+			Zk += (W1[i][k] * x[i]);
 		}
 
 		//insert X bias
-		Z = Z + hidden_bias[k];
+		Zk += hidden_bias[k];
 
-		h[k] = sigmoid_activation(Z);
+		h[k] = sigmoid_activation(Zk);
 	}
 
 	for (int j = 0; j < numberOf_Y; j++)
 	{
-		Z = 0.00f;
+		float Zj = 0.00f;
 
 		for (int k = 0; k < numberOf_H; k++)
 		{
-			Z = Z + (W2[k][j] * h[k]);
+			Zj += (W2[k][j] * h[k]);
 		}
 
 		//insert H bias
-		Z = Z + output_bias[j];
+		Zj += output_bias[j];
 
-		y[j] = sigmoid_activation(Z);
+		y[j] = sigmoid_activation(Zj);
 	}
 }
 
 void back_propagate()
 {
-	float err_H[numberOf_H];
+	float err_H[numberOf_H] = {0.00f};
 
 	float delta = 0.00f;
 
 	err_rete = 0.00f;
-
-	for (int k = 0; k < numberOf_H; k++)
-	{
-		err_H[k] = 0.00f;
-	}
 
 	for (int j = 0; j < numberOf_Y; j++)
 	{
@@ -506,21 +499,22 @@ void back_propagate()
 
 		for (int k = 0; k < numberOf_H; k++)
 		{
-			err_H[k] = err_H[k] + (delta * W2[k][j]);
+			W2[k][j] += (epsilon * delta * h[k]);
 
-			W2[k][j] = W2[k][j] + (epsilon * delta * h[k]);
+			err_H[k] += (delta * W2[k][j]);
 		}
 
 		// Aggiornamento del bias del livello di uscita
 		output_bias[j] += epsilon * delta;
 	}
+
 	for (int k = 0; k < numberOf_H; k++)
 	{
 		delta = err_H[k] * h[k] * (1.00f - h[k]);
 
 		for (int i = 0; i < numberOf_X; i++)
 		{
-			W1[i][k] = W1[i][k] + (epsilon * delta * x[i]);
+			W1[i][k] += (epsilon * delta * x[i]);
 		}
 
 		hidden_bias[k] += epsilon * delta;
